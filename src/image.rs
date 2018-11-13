@@ -12,21 +12,21 @@ where
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "PascalCase")]
 pub struct Image {
-    pub Id: String,
-    pub ParentId: String,
+    pub id: String,
+    pub parent_id: String,
     #[serde(deserialize_with = "null_to_default")]
-    pub RepoTags: Vec<String>,
+    pub repo_tags: Vec<String>,
     #[serde(deserialize_with = "null_to_default", default = "Vec::default")]
-    pub RepoDigests: Vec<String>,
-    pub Created: u64,
-    pub Size: i64,
-    #[serde(default = "i64::default")]
-    pub SharedSize: i64,
-    pub VirtualSize: i64,
-    #[serde(default = "i64::default")]
-    pub Containers: i64,
+    pub repo_digests: Vec<String>,
+    pub created: u64,
+    pub size: i64,
+    #[serde(default)]
+    pub shared_size: i64,
+    pub virtual_size: i64,
+    #[serde(default)]
+    pub containers: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

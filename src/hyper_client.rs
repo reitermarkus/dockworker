@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::path::Path;
 use std::result;
+#[cfg(feature = "openssl")]
 use std::sync::Arc;
 
 use hyper::client::pool::{Config, Pool};

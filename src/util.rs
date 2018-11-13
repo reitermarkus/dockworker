@@ -1,3 +1,5 @@
+#![cfg(test)]
+
 use hyper::net::NetworkStream;
 use std::io::{Read, Result, Write};
 use std::net::{Shutdown, SocketAddr};

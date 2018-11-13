@@ -9,7 +9,7 @@ fn main() {
     for image in &images {
         println!(
             "{} -> Size: {}, Virtual Size: {}, Created: {}",
-            image.Id, image.Size, image.VirtualSize, image.Created
+            image.id, image.size, image.virtual_size, image.created
         );
     }
 }

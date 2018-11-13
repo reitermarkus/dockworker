@@ -78,28 +78,28 @@ impl ContainerListOptions {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "PascalCase")]
 pub struct RestartPolicy {
-    Name: String,
-    MaximumRetryCount: u16,
+    name: String,
+    maximum_retry_count: u16,
 }
 
 impl Default for RestartPolicy {
     fn default() -> Self {
         Self {
-            Name: "no".to_owned(),
-            MaximumRetryCount: 0,
+            name: "no".to_owned(),
+            maximum_retry_count: 0,
         }
     }
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "PascalCase")]
 pub struct DeviceMapping {
-    PathOnHost: PathBuf,
-    PathInContainer: PathBuf,
+    path_on_host: PathBuf,
+    path_in_container: PathBuf,
     /// combination of r,w,m
-    CgroupPermissions: String,
+    cgroup_permissions: String,
 }
 
 impl DeviceMapping {
@@ -109,9 +109,9 @@ impl DeviceMapping {
         cgroup_permissions: String,
     ) -> Self {
         Self {
-            PathOnHost: path_on_host,
-            PathInContainer: path_in_container,
-            CgroupPermissions: cgroup_permissions,
+            path_on_host: path_on_host,
+            path_in_container: path_in_container,
+            cgroup_permissions: cgroup_permissions,
         }
     }
 }
@@ -586,9 +586,9 @@ pub enum RemovedImage {
 
 /// Response of the prune image api
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "PascalCase")]
 pub struct PrunedImages {
     #[serde(deserialize_with = "null_to_default")]
-    ImagesDeleted: Vec<RemovedImage>,
-    SpaceReclaimed: i64,
+    images_deleted: Vec<RemovedImage>,
+    space_reclaimed: i64,
 }

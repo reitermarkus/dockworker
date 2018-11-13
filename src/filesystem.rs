@@ -1,7 +1,7 @@
 /// response of /containers/{id}/changes
 #[derive(Debug, Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "PascalCase")]
 pub struct FilesystemChange {
-    pub Path: String,
-    pub Kind: u8,
+    pub path: String,
+    pub kind: u8,
 }

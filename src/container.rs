@@ -7,180 +7,200 @@ use std::rc::Rc;
 use std::cell::{Ref, RefCell, RefMut};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "PascalCase")]
 pub struct Container {
-    pub Id: String,
-    pub Image: String,
-    pub Status: String,
-    pub Command: String,
-    pub Created: u64,
-    pub Names: Vec<String>,
-    pub Ports: Vec<Port>,
-    pub SizeRw: Option<u64>, // I guess it is optional on Mac.
-    pub SizeRootFs: Option<u64>,
-    pub Labels: Option<HashMap<String, String>>,
-    pub HostConfig: HostConfig,
+    pub id: String,
+    pub image: String,
+    pub status: String,
+    pub command: String,
+    pub created: u64,
+    pub names: Vec<String>,
+    pub ports: Vec<Port>,
+    pub size_rw: Option<u64>, // I guess it is optional on Mac.
+    pub size_root_fs: Option<u64>,
+    pub labels: Option<HashMap<String, String>>,
+    pub host_config: HostConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "PascalCase")]
 pub struct Port {
-    pub IP: Option<String>,
-    pub PrivatePort: u64,
-    pub PublicPort: Option<u64>,
-    pub Type: String,
+    #[serde(rename = "IP")]
+    pub ip: Option<String>,
+    pub private_port: u64,
+    pub public_port: Option<u64>,
+    #[serde(rename = "Type")]
+    pub port_type: String, // Renamed because `type` is a keyword.
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "PascalCase")]
 pub struct HostConfig {
-    pub NetworkMode: String,
+    pub network_mode: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "PascalCase")]
 pub struct ContainerInfo {
-    pub AppArmorProfile: String,
-    pub Args: Vec<String>,
-    pub Config: Config,
-    pub Created: String,
-    pub Driver: String,
+    pub app_armor_profile: String,
+    pub args: Vec<String>,
+    pub config: Config,
+    pub created: String,
+    pub driver: String,
     // ExecIDs
     // GraphDriver
     // HostConfig
-    pub HostnamePath: String,
-    pub HostsPath: String,
-    pub Id: String,
-    pub Image: String,
-    pub LogPath: String,
-    pub MountLabel: String,
-    pub Mounts: Vec<Mount>,
-    pub Name: String,
-    pub NetworkSettings: NetworkSettings,
-    pub Path: String,
-    pub ProcessLabel: String,
-    pub ResolvConfPath: String,
-    pub RestartCount: u64,
-    pub State: State,
+    pub hostname_path: String,
+    pub hosts_path: String,
+    pub id: String,
+    pub image: String,
+    pub log_path: String,
+    pub mount_label: String,
+    pub mounts: Vec<Mount>,
+    pub name: String,
+    pub network_settings: NetworkSettings,
+    pub path: String,
+    pub process_label: String,
+    pub resolv_conf_path: String,
+    pub restart_count: u64,
+    pub state: State,
 }
 
 /// This type represents a `struct{}` in the Go code.
 pub type UnspecifiedObject = HashMap<String, String>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "PascalCase")]
 pub struct Config {
-    pub AttachStderr: bool,
-    pub AttachStdin: bool,
-    pub AttachStdout: bool,
+    pub attach_stderr: bool,
+    pub attach_stdin: bool,
+    pub attach_stdout: bool,
     // TODO: Verify that this is never just a `String`.
     //pub Cmd: Vec<String>,
-    pub Domainname: String,
+    pub domainname: String,
     // TODO: The source says `Option<String>` but I've seen
     // `Option<Vec<String>>` on the wire.  Ignore until we figure it out.
     //pub Entrypoint: Option<Vec<String>>,
-    pub Env: Option<Vec<String>>,
-    pub ExposedPorts: Option<HashMap<String, UnspecifiedObject>>,
-    pub Hostname: String,
-    pub Image: String,
-    pub Labels: HashMap<String, String>,
+    pub env: Option<Vec<String>>,
+    pub exposed_ports: Option<HashMap<String, UnspecifiedObject>>,
+    pub hostname: String,
+    pub image: String,
+    pub labels: HashMap<String, String>,
     // TODO: We don't know exacly what this vec contains.
     //pub OnBuild: Option<Vec<???>>,
-    pub OpenStdin: bool,
-    pub StdinOnce: bool,
-    pub Tty: bool,
-    pub User: String,
-    pub Volumes: Option<HashMap<String, UnspecifiedObject>>,
-    pub WorkingDir: String,
+    pub open_stdin: bool,
+    pub stdin_once: bool,
+    pub tty: bool,
+    pub user: String,
+    pub volumes: Option<HashMap<String, UnspecifiedObject>>,
+    pub working_dir: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "PascalCase")]
 pub struct Mount {
     // Name (optional)
     // Driver (optional)
-    pub Source: String,
-    pub Destination: String,
-    pub Mode: String,
-    pub RW: bool,
-    pub Propagation: String,
+    pub source: String,
+    pub destination: String,
+    pub mode: String,
+    #[serde(rename = "RW")]
+    pub rw: bool,
+    pub propagation: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "PascalCase")]
 pub struct NetworkSettings {
-    pub Bridge: String,
-    pub EndpointID: String,
-    pub Gateway: String,
-    pub GlobalIPv6Address: String,
-    pub GlobalIPv6PrefixLen: u32,
-    pub HairpinMode: bool,
-    pub IPAddress: String,
-    pub IPPrefixLen: u32,
-    pub IPv6Gateway: String,
-    pub LinkLocalIPv6Address: String,
-    pub LinkLocalIPv6PrefixLen: u32,
-    pub MacAddress: String,
-    pub Networks: HashMap<String, Network>,
-    pub Ports: Option<HashMap<String, Option<Vec<PortMapping>>>>,
-    pub SandboxID: String,
-    pub SandboxKey: String,
+    pub bridge: String,
+    #[serde(rename = "EndpointID")]
+    pub endpoint_id: String,
+    pub gateway: String,
+    #[serde(rename = "GlobalIPv6Address")]
+    pub global_ipv6_address: String,
+    #[serde(rename = "GlobalIPv6PrefixLen")]
+    pub global_ipv6_prefix_len: u32,
+    pub hairpin_mode: bool,
+    #[serde(rename = "IPAddress")]
+    pub ip_address: String,
+    #[serde(rename = "IPPrefixLen")]
+    pub ip_prefix_len: u32,
+    #[serde(rename = "IPv6Gateway")]
+    pub ipv6_gateway: String,
+    #[serde(rename = "LinkLocalIPv6Address")]
+    pub link_local_ipv6_address: String,
+    #[serde(rename = "LinkLocalIPv6PrefixLen")]
+    pub link_local_ipv6_prefix_len: u32,
+    pub mac_address: String,
+    pub networks: HashMap<String, Network>,
+    pub ports: Option<HashMap<String, Option<Vec<PortMapping>>>>,
+    #[serde(rename = "SandboxID")]
+    pub sandbox_id: String,
+    pub sandbox_key: String,
     // These two are null in the current output.
     //pub SecondaryIPAddresses: ,
     //pub SecondaryIPv6Addresses: ,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "PascalCase")]
 pub struct Network {
-    pub Aliases: Option<Vec<String>>,
-    pub EndpointID: String,
-    pub Gateway: String,
-    pub GlobalIPv6Address: String,
-    pub GlobalIPv6PrefixLen: u32,
+    pub aliases: Option<Vec<String>>,
+    #[serde(rename = "EndpointID")]
+    pub endpoint_id: String,
+    pub gateway: String,
+    #[serde(rename = "GlobalIPv6Address")]
+    pub global_ipv6_address: String,
+    #[serde(rename = "GlobalIPv6PrefixLen")]
+    pub global_ipv6_prefix_len: u32,
     //pub IPAMConfig: ,
-    pub IPAddress: String,
-    pub IPPrefixLen: u32,
-    pub IPv6Gateway: String,
+    #[serde(rename = "IPAddress")]
+    pub ip_address: String,
+    #[serde(rename = "IPPrefixLen")]
+    pub ip_prefix_len: u32,
+    #[serde(rename = "IPv6Gateway")]
+    pub ipv6_gateway: String,
     //pub Links:
-    pub MacAddress: String,
-    pub NetworkID: String,
+    pub mac_address: String,
+    #[serde(rename = "NetworkID")]
+    pub network_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "PascalCase")]
 pub struct PortMapping {
-    pub HostIp: String,
-    pub HostPort: String,
+    pub host_ip: String,
+    pub host_port: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "PascalCase")]
 pub struct State {
-    pub Status: String,
-    pub Running: bool,
-    pub Paused: bool,
-    pub Restarting: bool,
-    pub OOMKilled: bool,
-    pub Dead: bool,
+    pub status: String,
+    pub running: bool,
+    pub paused: bool,
+    pub restarting: bool,
+    #[serde(rename = "OOMKilled")]
+    pub oom_killed: bool,
+    pub dead: bool,
     // I don't know whether PIDs can be negative here.  They're normally
     // positive, but sometimes negative PIDs are used in certain APIs.
-    pub Pid: i64,
-    pub ExitCode: i64,
-    pub Error: String,
-    pub StartedAt: String,
-    pub FinishedAt: String,
+    pub pid: i64,
+    pub exit_code: i64,
+    pub error: String,
+    pub started_at: String,
+    pub finished_at: String,
 }
 
 impl std::fmt::Display for Container {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.Id)
+        write!(f, "{}", self.id)
     }
 }
 
 impl std::fmt::Display for ContainerInfo {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.Id)
+        write!(f, "{}", self.id)
     }
 }
 
@@ -498,20 +518,20 @@ impl Iterator for AttachResponseIter {
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "PascalCase")]
 pub struct ExitStatus {
-    StatusCode: i32,
+    status_code: i32,
 }
 
 impl ExitStatus {
     pub fn new(status_code: i32) -> Self {
         Self {
-            StatusCode: status_code,
+            status_code: status_code,
         }
     }
 
     pub fn into_inner(self) -> i32 {
-        self.StatusCode
+        self.status_code
     }
 }
 

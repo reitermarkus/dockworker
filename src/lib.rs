@@ -5,6 +5,7 @@
 
 extern crate base64;
 extern crate byteorder;
+extern crate dirs;
 #[macro_use]
 extern crate error_chain;
 extern crate hyper;

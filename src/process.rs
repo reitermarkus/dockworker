@@ -35,10 +35,10 @@ impl Default for Process {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "PascalCase")]
 pub struct Top {
-    pub Titles: Vec<String>,
-    pub Processes: Vec<Vec<String>>,
+    pub titles: Vec<String>,
+    pub processes: Vec<Vec<String>>,
 }
 
 impl Display for Process {

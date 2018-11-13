@@ -1,15 +1,15 @@
 #[derive(Debug, Deserialize)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "PascalCase")]
 pub struct Version {
-    pub Version: String,
-    pub ApiVersion: String,
-    #[serde(default = "String::default")]
-    pub MinAPIVersion: String,
-    pub GitCommit: String,
-    pub GoVersion: String,
-    pub Os: String,
-    pub Arch: String,
-    pub KernelVersion: String,
-    pub Experimental: Option<bool>,
-    pub BuildTime: Option<String>,
+    pub version: String,
+    pub api_version: String,
+    #[serde(default, rename = "MinAPIVersion")]
+    pub min_api_version: String,
+    pub git_commit: String,
+    pub go_version: String,
+    pub os: String,
+    pub arch: String,
+    pub kernel_version: String,
+    pub experimental: Option<bool>,
+    pub build_time: Option<String>,
 }

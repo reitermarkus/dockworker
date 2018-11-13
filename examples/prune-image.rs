@@ -16,6 +16,6 @@ fn main() {
         .unwrap();
 
     containers.iter().for_each(|c| {
-        println!("image: {}", c.Image);
+        println!("image: {}", c.image);
     });
 }

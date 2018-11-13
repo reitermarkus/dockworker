@@ -50,7 +50,7 @@ pub fn default_cert_path() -> Result<PathBuf> {
     if let Ok(ref path) = from_env {
         Ok(Path::new(path).to_owned())
     } else {
-        let home = env::home_dir().ok_or_else(|| ErrorKind::NoCertPath)?;
+        let home = dirs::home_dir().ok_or(ErrorKind::NoCertPath)?;
         Ok(home.join(".docker"))
     }
 }
@@ -364,11 +364,10 @@ impl Docker {
     ///
     /// # API
     /// /containers/{id}/attach
-    #[allow(non_snake_case)]
     pub fn attach_container(
         &self,
         id: &str,
-        detachKeys: Option<&str>,
+        detach_keys: Option<&str>,
         logs: bool,
         stream: bool,
         stdin: bool,
@@ -376,7 +375,7 @@ impl Docker {
         stderr: bool,
     ) -> Result<AttachResponse> {
         let mut param = url::form_urlencoded::Serializer::new(String::new());
-        if let Some(keys) = detachKeys {
+        if let Some(keys) = detach_keys {
             param.append_pair("detachKeys", keys);
         }
         param.append_pair("logs", &logs.to_string());
@@ -406,19 +405,19 @@ impl Docker {
     /// /containers/{id}/top
     pub fn container_top(&self, container: &Container) -> Result<Top> {
         self.http_client()
-            .get(self.headers(), &format!("/containers/{}/top", container.Id))
+            .get(self.headers(), &format!("/containers/{}/top", container.id))
             .and_then(api_result)
     }
 
     pub fn processes(&self, container: &Container) -> Result<Vec<Process>> {
         let top = self.container_top(container)?;
-        Ok(top.Processes
+        Ok(top.processes
             .iter()
             .map(|process| {
                 let mut p = Process::default();
                 for (i, value) in process.iter().enumerate() {
                     let v = value.clone();
-                    match top.Titles[i].as_ref() {
+                    match top.titles[i].as_ref() {
                         "UID" => p.user = v,
                         "USER" => p.user = v,
                         "PID" => p.pid = v,
@@ -448,7 +447,7 @@ impl Docker {
     pub fn stats(&self, container: &Container) -> Result<StatsReader> {
         let res = self.http_client().get(
             self.headers(),
-            &format!("/containers/{}/stats", container.Id),
+            &format!("/containers/{}/stats", container.id),
         )?;
         Ok(StatsReader::new(res))
     }
@@ -520,24 +519,23 @@ impl Docker {
     ///
     /// # API
     /// /containers/{id}/archive
-    #[allow(non_snake_case)]
     pub fn put_file(
         &self,
         id: &str,
         src: &Path,
         dst: &Path,
-        noOverwriteDirNonDir: bool,
+        no_overwrite_dir_non_dir: bool,
     ) -> Result<()> {
         debug!(
             "put_file({}, {}, {}, {})",
             id,
             src.display(),
             dst.display(),
-            noOverwriteDirNonDir
+            no_overwrite_dir_non_dir
         );
         let mut param = url::form_urlencoded::Serializer::new(String::new());
         param.append_pair("path", &dst.to_string_lossy());
-        param.append_pair("noOverwriteDirNonDir", &noOverwriteDirNonDir.to_string());
+        param.append_pair("noOverwriteDirNonDir", &no_overwrite_dir_non_dir.to_string());
         self.http_client()
             .put_file(
                 self.headers(),
@@ -760,7 +758,7 @@ impl Docker {
         self.http_client()
             .get(
                 self.headers(),
-                &format!("/containers/{}/json", container.Id),
+                &format!("/containers/{}/json", container.id),
             )
             .and_then(api_result)
     }
@@ -773,7 +771,7 @@ impl Docker {
         self.http_client()
             .get(
                 self.headers(),
-                &format!("/containers/{}/changes", container.Id),
+                &format!("/containers/{}/changes", container.id),
             )
             .and_then(api_result)
     }
@@ -789,7 +787,7 @@ impl Docker {
         self.http_client()
             .get(
                 self.headers(),
-                &format!("/containers/{}/export", container.Id),
+                &format!("/containers/{}/export", container.id),
             )
             .and_then(|res| {
                 if res.status.is_success() {
