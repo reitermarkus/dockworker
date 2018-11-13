@@ -538,11 +538,11 @@ impl Docker {
             self.http_client()
                 .post(&headers, &format!("/images/create?{}", param.finish()), "")?;
         if res.status.is_success() {
-            Ok(Box::new(
-                BufReader::new(res)
-                    .lines()
-                    .map(|line| Ok(serde_json::from_str(&line?)?)),
-            ))
+            Ok(Box::new(BufReader::new(res).lines().map(|line| {
+                let line = line?;
+                println!("{}", &line);
+                Ok(serde_json::from_str(&line)?)
+            })))
         } else {
             Err(serde_json::from_reader::<_, DockerError>(res)?.into())
         }
