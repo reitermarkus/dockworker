@@ -55,7 +55,7 @@ impl HyperClient {
 
     /// path to unix socket
     #[cfg(unix)]
-    pub fn connect_with_unix(path: &str) -> Self {
+    pub fn with_unix_socket(path: &str) -> Self {
         let conn = HttpUnixConnector::new(path);
         let pool_config = Config { max_idle: 8 };
         let pool = Pool::with_connector(pool_config, conn);
@@ -67,7 +67,7 @@ impl HyperClient {
     }
 
     #[cfg(feature = "openssl")]
-    pub fn connect_with_ssl(
+    pub fn with_ssl(
         addr: &str,
         key: &Path,
         cert: &Path,
@@ -85,7 +85,7 @@ impl HyperClient {
         Ok(Self::new(client, url))
     }
 
-    pub fn connect_with_http(addr: &str) -> result::Result<Self, Error> {
+    pub fn with_tcp(addr: &str) -> result::Result<Self, Error> {
         // This ensures that using docker-machine-esque addresses work with Hyper.
         let url = Url::parse(&addr.clone().replace("tcp://", "http://"))?;
 

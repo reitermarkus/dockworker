@@ -5,7 +5,7 @@ use dockworker::{ContainerListOptions, Docker};
 use std::io::{self, Write};
 
 fn find_all_exported_ports() -> Result<()> {
-    let docker = Docker::connect_with_defaults()?;
+    let docker = Docker::from_env()?;
     let containers = docker.containers(ContainerListOptions::default())?;
     for container in &containers {
         let info = docker.container_info(&container)?;

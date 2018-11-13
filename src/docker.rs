@@ -176,13 +176,13 @@ impl Docker {
     /// `DOCKER_TLS_VERIFY`, `DOCKER_CERT_PATH` and `DOCKER_CONFIG`, and we
     /// try to interpret these as much like the standard `docker` client as
     /// possible.
-    pub fn connect_with_defaults() -> Result<Docker> {
+    pub fn from_env() -> Result<Docker> {
       let host = env::var("DOCKER_HOST").unwrap_or(DEFAULT_DOCKER_HOST.to_string());
 
       // Dispatch to the correct connection function.
       let mkerr = || ErrorKind::CouldNotConnect(host.clone());
       if host.starts_with("unix://") {
-        return Docker::connect_with_unix(&host).chain_err(&mkerr)
+        return Docker::with_unix_socket(&host).chain_err(&mkerr)
       }
 
       if host.starts_with("tcp://") {
@@ -196,7 +196,7 @@ impl Docker {
             PathBuf::from(&cert_path)
           };
 
-          return Docker::connect_with_ssl(
+          return Docker::with_ssl(
             &host,
             &cert_path.join("key.pem"),
             &cert_path.join("cert.pem"),
@@ -204,42 +204,42 @@ impl Docker {
           ).chain_err(&mkerr)
         }
 
-        return Docker::connect_with_http(&host).chain_err(&mkerr)
+        return Docker::with_tcp(&host).chain_err(&mkerr)
       }
 
       Err(ErrorKind::UnsupportedScheme(host.clone()).into())
     }
 
     #[cfg(unix)]
-    pub fn connect_with_unix(addr: &str) -> Result<Docker> {
+    pub fn with_unix_socket(addr: &str) -> Result<Docker> {
         // This ensures that using a fully-qualified path --
         // e.g. unix://.... -- works.  The unix socket provider expects a
         // Path, so we don't need scheme.
         let url = addr.into_url()?;
-        let client = HyperClient::connect_with_unix(url.path());
+        let client = HyperClient::with_unix_socket(url.path());
         Ok(Docker::new(client, Protocol::Unix))
     }
 
     #[cfg(not(unix))]
-    pub fn connect_with_unix(addr: &str) -> Result<Docker> {
+    pub fn with_unix_socket(addr: &str) -> Result<Docker> {
         Err(ErrorKind::UnsupportedScheme(addr.to_owned()).into())
     }
 
     #[cfg(feature = "openssl")]
-    pub fn connect_with_ssl(addr: &str, key: &Path, cert: &Path, ca: &Path) -> Result<Docker> {
-        let client = HyperClient::connect_with_ssl(addr, key, cert, ca)?;
+    pub fn with_ssl(addr: &str, key: &Path, cert: &Path, ca: &Path) -> Result<Docker> {
+        let client = HyperClient::with_ssl(addr, key, cert, ca)?;
         Ok(Docker::new(client, Protocol::Tcp))
     }
 
     #[cfg(not(feature = "openssl"))]
-    pub fn connect_with_ssl(_addr: &str, _key: &Path, _cert: &Path, _ca: &Path) -> Result<Docker> {
+    pub fn with_ssl(_addr: &str, _key: &Path, _cert: &Path, _ca: &Path) -> Result<Docker> {
         Err(ErrorKind::SslDisabled.into())
     }
 
     /// Connect using unsecured HTTP.  This is strongly discouraged
     /// everywhere but on Windows when npipe support is not available.
-    pub fn connect_with_http(addr: &str) -> Result<Docker> {
-        let client = HyperClient::connect_with_http(addr)?;
+    pub fn with_tcp(addr: &str) -> Result<Docker> {
+        let client = HyperClient::with_tcp(addr)?;
         Ok(Docker::new(client, Protocol::Tcp))
     }
 
@@ -846,25 +846,25 @@ mod tests {
 
     #[test]
     fn test_server_access() {
-        let docker = Docker::connect_with_defaults().unwrap();
+        let docker = Docker::from_env().unwrap();
         assert!(docker.ping().is_ok());
     }
 
     #[test]
     fn test_info() {
-        let docker = Docker::connect_with_defaults().unwrap();
+        let docker = Docker::from_env().unwrap();
         assert!(docker.system_info().is_ok());
     }
 
     #[test]
     fn get_version() {
-        let docker = Docker::connect_with_defaults().unwrap();
+        let docker = Docker::from_env().unwrap();
         assert!(docker.version().is_ok());
     }
 
     #[test]
     fn create_remove_image() {
-        let docker = Docker::connect_with_defaults().unwrap();
+        let docker = Docker::from_env().unwrap();
         let (name, tag) = ("debian", "latest");
         let sts = docker
             .create_image(name, tag)
@@ -879,7 +879,7 @@ mod tests {
 
     #[test]
     fn create_remove_container() {
-        let docker = Docker::connect_with_defaults().unwrap();
+        let docker = Docker::from_env().unwrap();
         let (name, tag) = ("hello-world", "linux");
         assert!(
             docker
@@ -909,7 +909,7 @@ mod tests {
 
     #[test]
     fn auto_remove_container() {
-        let docker = Docker::connect_with_defaults().unwrap();
+        let docker = Docker::from_env().unwrap();
         let (name, tag) = ("alpine", "3.7");
         assert!(
             docker
@@ -950,7 +950,7 @@ mod tests {
 
     #[test]
     fn export_load_image() {
-        let docker = Docker::connect_with_defaults().unwrap();
+        let docker = Docker::from_env().unwrap();
         pull_image(&docker, "alpine", "latest");
 
         {
@@ -983,7 +983,7 @@ mod tests {
 
     #[test]
     fn wait_container() {
-        let docker = Docker::connect_with_defaults().unwrap();
+        let docker = Docker::from_env().unwrap();
         let (name, tag) = ("alpine", "3.4");
         let container_name = "alpine34_exit0";
         with_image(&docker, name, tag, |name, tag| {
@@ -1028,7 +1028,7 @@ mod tests {
 
     #[test]
     fn put_file_to_container() {
-        let docker = Docker::connect_with_defaults().unwrap();
+        let docker = Docker::from_env().unwrap();
         let (name, tag) = ("alpine", "3.6");
 
         let temp_dir = env::temp_dir();
@@ -1089,7 +1089,7 @@ mod tests {
     #[test]
     #[ignore]
     fn attach_container() {
-        let docker = Docker::connect_with_defaults().unwrap();
+        let docker = Docker::from_env().unwrap();
 
         // expected files
         let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("docker");

@@ -3,7 +3,7 @@ extern crate dockworker;
 use dockworker::{Docker, container::ContainerFilters};
 
 fn main() {
-    let docker = Docker::connect_with_defaults().unwrap();
+    let docker = Docker::from_env().unwrap();
 
     let prunedt = docker.prune_image(true).unwrap();
     println!("pruned(true): {:?}", prunedt);

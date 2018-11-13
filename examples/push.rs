@@ -4,7 +4,7 @@ extern crate hyper;
 use dockworker::{Docker, credentials::{Credential, UserPassword}};
 
 fn main() {
-    let mut docker = Docker::connect_with_defaults().unwrap();
+    let mut docker = Docker::from_env().unwrap();
 
     let (name, tag) = ("alpine", "latest");
     docker

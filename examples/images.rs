@@ -3,7 +3,7 @@ extern crate dockworker;
 use dockworker::Docker;
 
 fn main() {
-    let docker = Docker::connect_with_defaults().unwrap();
+    let docker = Docker::from_env().unwrap();
     let images = docker.images(false).unwrap();
 
     for image in &images {

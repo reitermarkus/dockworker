@@ -5,7 +5,7 @@ use std::fs::File;
 use std::io;
 
 fn main() {
-    let docker = Docker::connect_with_defaults().unwrap();
+    let docker = Docker::from_env().unwrap();
     let opts = ContainerListOptions::default();
     let mut file = File::create("temp.tar").unwrap();
     if let Some(container) = docker.containers(opts).unwrap().get(0) {

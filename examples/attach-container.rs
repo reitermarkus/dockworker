@@ -5,7 +5,7 @@ use dockworker::{ContainerCreateOptions, ContainerHostConfig, Docker, container:
 use std::io::{BufRead, BufReader};
 
 fn main() {
-    let docker = Docker::connect_with_defaults().unwrap();
+    let docker = Docker::from_env().unwrap();
     let mut host_config = ContainerHostConfig::new();
     host_config.auto_remove(true);
     let mut create = ContainerCreateOptions::new("hello-world:linux");
