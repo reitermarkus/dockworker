@@ -1,12 +1,13 @@
 extern crate dockworker;
 
 use dockworker::errors::*;
-use dockworker::{ContainerListOptions, Docker};
+use dockworker::{Docker, container::ContainerFilters};
 use std::io::{self, Write};
 
 fn find_all_exported_ports() -> Result<()> {
     let docker = Docker::from_env()?;
-    let containers = docker.containers(ContainerListOptions::default())?;
+    let filter = ContainerFilters::new();
+    let containers = docker.list_containers(None, None, None, filter)?;
     for container in &containers {
         let info = docker.container_info(&container)?;
 

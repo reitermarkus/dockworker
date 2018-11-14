@@ -1,11 +1,11 @@
 extern crate dockworker;
 
-use dockworker::{ContainerListOptions, Docker};
+use dockworker::{Docker, container::ContainerFilters};
 
 fn main() {
     let docker = Docker::from_env().unwrap();
-    let opts = ContainerListOptions::default();
-    if let Some(container) = docker.containers(opts).unwrap().get(0) {
+    let filter = ContainerFilters::new();
+    if let Some(container) = docker.list_containers(None, None, None, filter).unwrap().get(0) {
         for change in docker.filesystem_changes(container).unwrap() {
             println!("{:#?}", change);
         }

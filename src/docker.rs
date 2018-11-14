@@ -272,16 +272,6 @@ impl Docker {
             .and_then(api_result)
     }
 
-    #[deprecated]
-    pub fn containers(&self, opts: ContainerListOptions) -> Result<Vec<Container>> {
-        self.http_client()
-            .get(
-                self.headers(),
-                &format!("/containers/json?{}", opts.to_url_params()),
-            )
-            .and_then(api_result)
-    }
-
     /// Create a container
     ///
     /// # Summary
