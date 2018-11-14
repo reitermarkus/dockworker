@@ -1,24 +1,15 @@
-use serde::de::{DeserializeOwned, Deserializer};
-use serde::Deserialize;
 use std::{fmt, result};
 
-fn null_to_default<'de, D, T>(de: D) -> Result<T, D::Error>
-where
-    D: Deserializer<'de>,
-    T: DeserializeOwned + Default,
-{
-    let actual: Option<T> = Option::deserialize(de)?;
-    Ok(actual.unwrap_or_default())
-}
+use serde_helpers::null_to_default;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Image {
     pub id: String,
     pub parent_id: String,
-    #[serde(deserialize_with = "null_to_default")]
+    #[serde(default, deserialize_with = "null_to_default")]
     pub repo_tags: Vec<String>,
-    #[serde(deserialize_with = "null_to_default", default = "Vec::default")]
+    #[serde(default, deserialize_with = "null_to_default")]
     pub repo_digests: Vec<String>,
     pub created: u64,
     pub size: i64,

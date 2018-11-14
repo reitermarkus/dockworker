@@ -1,57 +1,9 @@
-use std::fmt;
 use std::path::PathBuf;
-
-use serde::de::{self, DeserializeOwned, Deserializer, Visitor};
-use serde::{Deserialize};
+use std::collections::HashMap as Map;
 
 use swarm::{Spec, TLSInfo};
 
-struct NumToBoolVisitor;
-
-impl<'de> Visitor<'de> for NumToBoolVisitor {
-    type Value = bool;
-
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_str("0 or 1 or true or false")
-    }
-
-    fn visit_bool<E>(self, value: bool) -> Result<Self::Value, E>
-    where
-        E: de::Error,
-    {
-        Ok(value)
-    }
-
-    fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E>
-    where
-        E: de::Error,
-    {
-        Ok(value != 0)
-    }
-
-    fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
-    where
-        E: de::Error,
-    {
-        Ok(value != 0)
-    }
-}
-
-fn num_to_bool<'de, D>(deserializer: D) -> Result<bool, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    deserializer.deserialize_any(NumToBoolVisitor)
-}
-
-fn null_to_default<'de, D, T>(deserializer: D) -> Result<T, D::Error>
-where
-    D: Deserializer<'de>,
-    T: DeserializeOwned + Default,
-{
-    let opt: Option<T> = Option::deserialize(deserializer)?;
-    Ok(opt.unwrap_or_default())
-}
+use serde_helpers::{num_to_bool, null_to_default};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
@@ -88,6 +40,14 @@ pub struct Cluster {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
+pub struct RemoteManager {
+  #[serde(rename = "NodeID")]
+  pub node_id: String,
+  pub addr: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
 pub struct Swarm {
   #[serde(rename = "NodeID")]
   pub node_id: String,
@@ -95,13 +55,29 @@ pub struct Swarm {
   pub local_node_state: String,
   pub control_available: bool,
   pub error: String,
-  // #[serde(default = "Vec::default", deserialize_with = "null_to_default")]
-  // pub remote_managers: Vec<RemoteManager>,
+  #[serde(default, deserialize_with = "null_to_default")]
+  pub remote_managers: Vec<RemoteManager>,
   #[serde(default, deserialize_with = "null_to_default")]
   pub nodes: u64,
   #[serde(default, deserialize_with = "null_to_default")]
   pub managers: u64,
   pub cluster: Option<Cluster>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Runtime {
+  pub path: String,
+  #[serde(default, deserialize_with = "null_to_default")]
+  pub runtime_args: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct Commit {
+  #[serde(rename = "ID")]
+  pub id: String,
+  pub expected: String,
 }
 
 /// response of /info
@@ -153,7 +129,7 @@ pub struct SystemInfo {
     // pub registry_config: RegistryConfig,
     #[serde(rename = "NCPU")]
     pub n_cpu: u64,
-    #[serde(default = "Vec::default", deserialize_with = "null_to_default")]
+    #[serde(default, deserialize_with = "null_to_default")]
     pub generic_resources: Vec<String>,
     pub docker_root_dir: PathBuf,
     pub mem_total: u64,
@@ -161,21 +137,22 @@ pub struct SystemInfo {
     pub https_proxy: String,
     pub no_proxy: String,
     pub name: String,
-    #[serde(default = "Vec::default", deserialize_with = "null_to_default")]
+    #[serde(default, deserialize_with = "null_to_default")]
     pub labels: Vec<String>,
     pub experimental_build: bool,
     pub server_version: String,
     pub cluster_store: String,
     pub cluster_advertise: String,
-    // pub runtimes: HashMap<String, Runtime>,
+    #[serde(default, deserialize_with = "null_to_default")]
+    pub runtimes: Map<String, Runtime>,
     pub default_runtime: String,
     pub swarm: Swarm,
     pub live_restore_enabled: bool,
     pub isolation: String,
     pub init_binary: String,
-    // pub container_commit: Commit,
-    // pub run_commit: Commit,
-    // pub init_commit: Commit,
+    pub containerd_commit: Commit,
+    pub runc_commit: Commit,
+    pub init_commit: Commit,
     pub security_options: Vec<String>,
 }
 

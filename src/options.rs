@@ -6,17 +6,7 @@ use std::time::Duration;
 use std::collections::HashMap;
 use url::form_urlencoded;
 
-use serde::de::{DeserializeOwned, Deserializer};
-use serde::Deserialize;
-
-fn null_to_default<'de, D, T>(de: D) -> Result<T, D::Error>
-where
-    D: Deserializer<'de>,
-    T: DeserializeOwned + Default,
-{
-    let actual: Option<T> = Option::deserialize(de)?;
-    Ok(actual.unwrap_or_default())
-}
+use serde_helpers::null_to_default;
 
 /// Options for `Docker::containers`.  This uses a "builder" pattern, so
 /// most methods will consume the object and return a new one.

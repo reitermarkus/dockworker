@@ -48,3 +48,5 @@ pub mod credentials;
 
 pub use docker::Docker;
 pub use options::*;
+
+mod serde_helpers;

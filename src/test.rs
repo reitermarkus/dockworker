@@ -50,7 +50,12 @@ fn get_stats_streaming() {
 #[test]
 fn get_system_info() {
     let response = get_system_info_response();
-    assert!(serde_json::from_str::<SystemInfo>(&response).is_ok())
+
+    let json = serde_json::from_str::<SystemInfo>(&response);
+
+    println!("{:#?}", json);
+
+    assert!(json.is_ok())
 }
 
 #[test]
