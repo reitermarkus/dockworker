@@ -181,14 +181,13 @@ impl Docker {
       }
 
       if host.starts_with("tcp://") {
-        let tls_verify = env::var("DOCKER_TLS_VERIFY").unwrap_or("".to_string());
-        let cert_path = env::var("DOCKER_CERT_PATH").unwrap_or("".to_string());
+        let tls_verify = env::var("DOCKER_TLS_VERIFY").ok().filter(|s| !s.is_empty());
+        let cert_path = env::var("DOCKER_CERT_PATH").ok().filter(|s| !s.is_empty());
 
-        if tls_verify != "" || cert_path != "" {
-          let cert_path = if cert_path == "" {
-            dirs::home_dir().ok_or(ErrorKind::NoCertPath)?.join(".docker")
-          } else {
-            PathBuf::from(&cert_path)
+        if tls_verify.is_some() || cert_path.is_some() {
+          let cert_path = match cert_path {
+            Some(path) => PathBuf::from(&path),
+            None => dirs::home_dir().ok_or(ErrorKind::NoCertPath)?.join(".docker"),
           };
 
           return Docker::with_ssl(
