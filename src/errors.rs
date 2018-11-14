@@ -2,24 +2,17 @@ use docker;
 use hyper;
 use serde_json;
 use std::io;
-use base64;
 
 error_chain! {
   foreign_links {
-    Hyper(hyper::Error);
+    Connection(hyper::Error);
     Url(hyper::error::ParseError);
     Io(io::Error);
     Json(serde_json::error::Error);
     Docker(docker::DockerError);
-    Base64(base64::DecodeError);
   }
 
   errors {
-    ContainerInfo(id: String) {
-      description("could not fetch information about container")
-      display("could not fetch information about container '{}'", &id)
-    }
-
     CouldNotConnect(host: String) {
       description("could not connect to Docker")
       display("could not connected to Docker at '{}'", &host)
