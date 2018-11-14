@@ -2,7 +2,9 @@ use std::fmt;
 use std::path::PathBuf;
 
 use serde::de::{self, DeserializeOwned, Deserializer, Visitor};
-use serde::Deserialize;
+use serde::{Deserialize};
+
+use swarm::{Spec, TLSInfo};
 
 struct NumToBoolVisitor;
 
@@ -66,30 +68,8 @@ pub struct Plugins {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct TLSInfo {
-  pub trust_root: String,
-  pub cert_issuer_subject: String,
-  pub cert_issuer_public_key: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
 pub struct ClusterVersion {
   pub index: u64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct Spec {
-  pub name: String,
-  // pub labels: Labels,
-  // pub orchestration: Orchestration,
-  // pub raft: Raft,
-  // pub dispatcher: Dispatcher,
-  // #[serde(rename = "CAConfig")]
-  // pub ca_config: CAConfig,
-  // pub task_defaults: TaskDefaults,
-  // pub encryption_config: EncryptionConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -25,6 +25,7 @@ use system::{AuthToken, SystemInfo};
 use tar::{self, Archive};
 use version::Version;
 pub use credentials::{Credential, UserPassword};
+use swarm::{Swarm, Spec};
 
 use serde::de::DeserializeOwned;
 use serde_json::{self, Value};
@@ -446,6 +447,48 @@ impl Docker {
             &format!("/containers/{}/stats", container.id),
         )?;
         Ok(StatsReader::new(res))
+    }
+
+    /// Initialize a new swarm
+    ///
+    /// # API
+    /// /swarm/init
+    pub fn init_swarm(&self, advertise_addr: Option<String>, listen_addr: Option<String>, force_new_cluster: Option<bool>, spec: Option<Spec>) -> Result<String> {
+      let data = json!({
+        "AdvertiseAddr": advertise_addr,
+        "ListenAddr": listen_addr.unwrap_or("0.0.0.0".to_string()),
+        "ForceNewCluster": force_new_cluster,
+        "Spec": spec,
+      }).to_string();
+
+      let mut headers = self.headers().clone();
+      headers.set(ContentType(Mime(TopLevel::Application, SubLevel::Json, vec![])));
+      self.http_client()
+          .post(&headers, &"/swarm/init", &data)
+          .and_then(api_result)
+    }
+
+    /// Inspect a swarm
+    ///
+    /// # API
+    /// /swarm
+    pub fn inspect_swarm(&self) -> Result<Swarm> {
+      self.http_client()
+          .get(self.headers(), &"/swarm")
+          .and_then(api_result)
+    }
+
+    /// Leave swarm
+    ///
+    /// # API
+    /// /swarm/leave
+    pub fn leave_swarm(&self, force: Option<bool>) -> Result<()> {
+      let mut param = url::form_urlencoded::Serializer::new(String::new());
+      param.append_pair("force", &force.unwrap_or(false).to_string());
+
+      self.http_client()
+          .post(&self.headers(), &format!("/swarm/leave?{}", param.finish()), "")
+          .and_then(ignore_result)
     }
 
     /// Wait for a container

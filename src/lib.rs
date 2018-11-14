@@ -19,6 +19,7 @@ extern crate openssl;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
 extern crate serde_json;
 extern crate tar;
 #[cfg(unix)]
@@ -36,6 +37,7 @@ mod options;
 pub mod process;
 pub mod signal;
 pub mod stats;
+pub mod swarm;
 pub mod system;
 mod test;
 #[cfg(unix)]
