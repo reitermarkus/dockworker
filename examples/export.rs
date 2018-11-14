@@ -1,6 +1,6 @@
 extern crate dockworker;
 
-use dockworker::{Docker, container::ContainerFilters};
+use dockworker::{Docker, models::ContainerFilters};
 use std::fs::File;
 use std::io;
 

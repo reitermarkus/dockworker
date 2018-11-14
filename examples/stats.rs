@@ -1,6 +1,6 @@
 extern crate dockworker;
 
-use dockworker::{Docker, container::ContainerFilters};
+use dockworker::{Docker, models::ContainerFilters};
 
 fn main() {
     let docker = Docker::from_env().unwrap();

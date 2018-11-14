@@ -1,7 +1,7 @@
 extern crate dockworker;
 
 use dockworker::errors::*;
-use dockworker::{Docker, container::ContainerFilters};
+use dockworker::{Docker, models::ContainerFilters};
 use std::io::{self, Write};
 
 fn find_all_exported_ports() -> Result<()> {

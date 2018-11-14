@@ -13,19 +13,13 @@ use std::result;
 use std::time::Duration;
 use url;
 
-use container::{AttachResponse, Container, ContainerFilters, ContainerInfo, ExitStatus};
+use models::{AuthToken, Container, ContainerInfo, ContainerCreateOptions, ContainerFilters, CreateContainerResponse, Credential, ExitStatus, FilesystemChange, Image, ImageId, PrunedImages, RemovedImage, Swarm, SwarmSpec, SystemInfo, Top, UserPassword, Version};
+use container::AttachResponse;
 use errors::*;
-use filesystem::FilesystemChange;
 use hyper_client::HyperClient;
-use image::{Image, ImageId};
-use options::*;
-use process::{Process, Top};
+use process::Process;
 use stats::StatsReader;
-use system::{AuthToken, SystemInfo};
 use tar::{self, Archive};
-use version::Version;
-pub use credentials::{Credential, UserPassword};
-use swarm::{Swarm, Spec};
 
 use serde::de::DeserializeOwned;
 use serde_json::{self, Value};
@@ -443,7 +437,7 @@ impl Docker {
     ///
     /// # API
     /// /swarm/init
-    pub fn init_swarm(&self, advertise_addr: Option<String>, listen_addr: Option<String>, force_new_cluster: Option<bool>, spec: Option<Spec>) -> Result<String> {
+    pub fn init_swarm(&self, advertise_addr: Option<String>, listen_addr: Option<String>, force_new_cluster: Option<bool>, spec: Option<SwarmSpec>) -> Result<String> {
       let data = json!({
         "AdvertiseAddr": advertise_addr,
         "ListenAddr": listen_addr.unwrap_or("0.0.0.0".to_string()),
@@ -876,6 +870,7 @@ mod tests {
     use tar::Builder as TarBuilder;
 
     use container;
+    use models::ContainerHostConfig;
 
     #[test]
     fn test_server_access() {

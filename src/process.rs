@@ -34,13 +34,6 @@ impl Default for Process {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct Top {
-    pub titles: Vec<String>,
-    pub processes: Vec<Vec<String>>,
-}
-
 impl Display for Process {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         let mut s = String::new();

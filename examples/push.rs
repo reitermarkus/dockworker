@@ -1,7 +1,7 @@
 extern crate dockworker;
 extern crate hyper;
 
-use dockworker::{Docker, credentials::{Credential, UserPassword}};
+use dockworker::{Docker, models::{Credential, UserPassword}};
 
 fn main() {
     let mut docker = Docker::from_env().unwrap();

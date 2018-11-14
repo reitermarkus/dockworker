@@ -30,23 +30,16 @@ mod header;
 pub mod container;
 mod docker;
 pub mod errors;
-pub mod filesystem;
 mod hyper_client;
-pub mod image;
-mod options;
 pub mod process;
 pub mod signal;
 pub mod stats;
-pub mod swarm;
-pub mod system;
+pub mod models;
 mod test;
 #[cfg(unix)]
 mod unix;
 mod util;
-pub mod version;
-pub mod credentials;
 
 pub use docker::Docker;
-pub use options::*;
 
 mod serde_helpers;

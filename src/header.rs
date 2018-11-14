@@ -8,7 +8,7 @@ use hyper::Error;
 use base64::{self, STANDARD};
 
 /// The http header represent `X-Registry-Auth`
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct XRegistryAuth {
     /// Header value string.
     /// This body is sent/recv with enc/dec-ed base64 implicitly
