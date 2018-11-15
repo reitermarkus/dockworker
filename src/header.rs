@@ -1,8 +1,9 @@
 use std::fmt;
+
+use base64;
 use hyper::header::{Header, HeaderFormat};
 use hyper::error::Result;
 use hyper::Error;
-use base64::{self, STANDARD};
 
 #[derive(Debug, Clone)]
 pub struct XRegistryAuth {
@@ -34,7 +35,7 @@ impl Header for XRegistryAuth {
 
 impl HeaderFormat for XRegistryAuth {
   fn fmt_header(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    let b64 = base64::encode_config(self.body.as_bytes(), STANDARD);
+    let b64 = base64::encode(&self.body);
     debug!("{}: {}", Self::header_name(), b64);
     write!(f, "{}", b64)
   }
