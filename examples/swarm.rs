@@ -14,7 +14,7 @@ fn main() -> Result<(), Box<Error>> {
   let swarm_info = docker.inspect_swarm()?;
   println!("{:#?}", swarm_info);
 
-  docker.leave_swarm(Some(true))?;
+  docker.leave_swarm(true)?;
 
   Ok(())
 }

@@ -465,9 +465,9 @@ impl Docker {
     ///
     /// # API
     /// /swarm/leave
-    pub fn leave_swarm(&self, force: Option<bool>) -> Result<()> {
+    pub fn leave_swarm(&self, force: bool) -> Result<()> {
       let mut param = url::form_urlencoded::Serializer::new(String::new());
-      param.append_pair("force", &force.unwrap_or(false).to_string());
+      param.append_pair("force", &force.to_string());
 
       self.http_client()
           .post(&self.headers(), &format!("/swarm/leave?{}", param.finish()), "")
