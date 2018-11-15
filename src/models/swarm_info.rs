@@ -1,4 +1,4 @@
-use serde_helpers::null_to_default;
+use serde_aux::prelude::*;
 
 use models::{Cluster, RemoteManager};
 
@@ -11,11 +11,11 @@ pub struct SwarmInfo {
   pub local_node_state: String,
   pub control_available: bool,
   pub error: String,
-  #[serde(default, deserialize_with = "null_to_default")]
+  #[serde(default, deserialize_with = "deserialize_default_from_null")]
   pub remote_managers: Vec<RemoteManager>,
-  #[serde(default, deserialize_with = "null_to_default")]
+  #[serde(default, deserialize_with = "deserialize_default_from_null")]
   pub nodes: u64,
-  #[serde(default, deserialize_with = "null_to_default")]
+  #[serde(default, deserialize_with = "deserialize_default_from_null")]
   pub managers: u64,
   pub cluster: Option<Cluster>,
 }

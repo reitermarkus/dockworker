@@ -1,11 +1,11 @@
-use serde_helpers::null_to_default;
+use serde_aux::prelude::*;
 
 use models::Component;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Version {
-  #[serde(default, deserialize_with = "null_to_default")]
+  #[serde(default, deserialize_with = "deserialize_default_from_null")]
   pub components: Vec<Component>,
   pub version: String,
   pub api_version: String,

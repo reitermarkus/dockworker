@@ -17,6 +17,7 @@ extern crate openssl;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+extern crate serde_aux;
 #[macro_use]
 extern crate serde_json;
 extern crate tar;
@@ -40,5 +41,3 @@ mod test;
 mod unix;
 
 pub use docker::Docker;
-
-mod serde_helpers;
