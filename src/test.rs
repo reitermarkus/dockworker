@@ -7,7 +7,7 @@ use hyper::Url;
 use serde_json;
 use stats::{Stats, StatsReader};
 use std::io::Write;
-use util::MemoryStream;
+use memory_stream::MemoryStream;
 
 #[test]
 fn get_containers() {
