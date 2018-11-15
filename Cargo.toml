@@ -34,7 +34,7 @@ nix = "0.11"
 openssl = { version = "0.7", optional = true }
 serde = "1.0"
 serde_derive = "1.0"
-serde-aux = "0.5"
+serde-aux = { git = "https://github.com/vityafx/serde-aux", rev = "018fe992" }
 serde_json = "1.0"
 tar = "0.4"
 url = "1.7"
@@ -48,6 +48,3 @@ unix_socket = "0.5"
 
 [target.'cfg(windows)'.dependencies]
 named_pipe = "0.2"
-
-[patch.crates-io]
-serde-aux = { git = "https://github.com/vityafx/serde-aux", rev = "018fe992" }
