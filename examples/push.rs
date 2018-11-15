@@ -14,10 +14,10 @@ fn main() {
 
     let serveraddress = "localhost:5000";
     docker.set_credential(Credential::with_password(UserPassword::new(
-        "someusername".to_owned(),
-        "somepassword".to_owned(),
-        "someusername@example.com".to_owned(),
-        serveraddress.to_owned(),
+        "someusername",
+        "somepassword",
+        "someusername@example.com",
+        serveraddress,
     )));
 
     println!("pulled: {}:{}", name, tag);
