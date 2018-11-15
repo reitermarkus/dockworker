@@ -1,9 +1,10 @@
-use std::error::Error;
+extern crate failure;
+use failure::Error;
 
 extern crate dockworker;
 use dockworker::Docker;
 
-fn main() -> Result<(), Box<Error>> {
+fn main() -> Result<(), Error> {
   let docker = Docker::from_env()?;
 
   println!("{:#?}", docker.system_info()?.swarm.local_node_state);

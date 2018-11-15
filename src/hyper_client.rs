@@ -14,12 +14,10 @@ use hyper::net::{HttpsConnector, Openssl};
 use hyper::Client;
 use hyper::Url;
 #[cfg(feature = "openssl")]
-use openssl::ssl::{SslContext, SslMethod};
-#[cfg(feature = "openssl")]
-use openssl::x509::X509FileType;
+use openssl::{ssl::{SslContext, SslMethod}, x509::X509FileType};
 
 use docker::*;
-use errors::*;
+use error::*;
 #[cfg(unix)]
 use unix::HttpUnixConnector;
 
@@ -33,16 +31,16 @@ pub struct HyperClient {
 }
 
 #[cfg(feature = "openssl")]
-fn ssl_context(addr: &str, key: &Path, cert: &Path, ca: &Path) -> result::Result<Openssl, Error> {
-    let mkerr = || ErrorKind::SslError(addr.to_owned());
-    let mut context = SslContext::new(SslMethod::Sslv23).chain_err(&mkerr)?;
+fn ssl_context(addr: &str, key: &Path, cert: &Path, ca: &Path) -> result::Result<Openssl, Context<Error>> {
+    let mkerr = |_| Error::SslError(addr.to_owned());
+    let mut context = SslContext::new(SslMethod::Sslv23).map_err(mkerr)?;
     context.set_CA_file(ca).chain_err(&mkerr)?;
     context
         .set_certificate_file(cert, X509FileType::PEM)
-        .chain_err(&mkerr)?;
+        .map_err(mkerr)?;
     context
         .set_private_key_file(key, X509FileType::PEM)
-        .chain_err(&mkerr)?;
+        .map_err(mkerr)?;
     Ok(Openssl {
         context: Arc::new(context),
     })

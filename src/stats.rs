@@ -4,7 +4,7 @@ use std::iter;
 
 use serde_json;
 
-use errors::*;
+use error::*;
 
 /// response of /containers/{}/stats api
 #[derive(Debug)]
@@ -27,10 +27,10 @@ impl iter::Iterator for StatsReader {
         let mut line = String::new();
         match self.buf.read_line(&mut line) {
             Ok(0) => None,
-            Ok(_) => Some(
-                serde_json::from_str::<Stats>(&line)
-                    .chain_err(|| ErrorKind::ParseError("Stats", line)),
-            ),
+            Ok(_) => match serde_json::from_str::<Stats>(&line) {
+              Ok(e) => Some(Ok(e)),
+              Err(err) => Some(Err(err.into())),
+            },
             Err(err) => Some(Err(err.into())),
         }
     }

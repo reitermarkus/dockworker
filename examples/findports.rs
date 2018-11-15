@@ -1,6 +1,6 @@
 extern crate dockworker;
 
-use dockworker::errors::*;
+use dockworker::error::*;
 use dockworker::{Docker, models::ContainerFilters};
 use std::io::{self, Write};
 

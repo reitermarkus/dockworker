@@ -27,7 +27,7 @@ ssl = ["openssl", "hyper/ssl"]
 base64 = "0.9"
 byteorder = "1.2"
 dirs = "1.0"
-error-chain = "0.12"
+failure = "0.1"
 hyper = { version = "0.9", default-features = false }
 log = "0.4"
 nix = "0.11"

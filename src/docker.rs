@@ -15,7 +15,7 @@ use url;
 
 use models::{AuthToken, Container, ContainerInfo, ContainerCreateOptions, ContainerFilters, CreateContainerResponse, Credential, ExitStatus, FilesystemChange, Image, ImageId, PrunedImages, RemovedImage, Swarm, SwarmSpec, SystemInfo, Top, UserPassword, Version};
 use container::AttachResponse;
-use errors::*;
+use error::*;
 use hyper_client::HyperClient;
 use process::Process;
 use stats::StatsReader;
@@ -114,7 +114,7 @@ fn ignore_result(res: Response) -> result::Result<(), Error> {
 
 /// A http client
 pub trait HttpClient {
-    type Err: ::std::error::Error + Send + 'static;
+    type Err: ::failure::Fail + Send + 'static;
 
     fn get(&self, headers: &Headers, path: &str) -> result::Result<Response, Self::Err>;
 
@@ -175,9 +175,9 @@ impl Docker {
       let host = env::var("DOCKER_HOST").unwrap_or(DEFAULT_DOCKER_HOST.to_string());
 
       // Dispatch to the correct connection function.
-      let mkerr = || ErrorKind::CouldNotConnect(host.clone());
+      let err = Error::CouldNotConnect(host.clone());
       if host.starts_with("unix://") {
-        return Docker::with_unix_socket(&host).chain_err(&mkerr)
+        return Docker::with_unix_socket(&host).map_err(|_| err)
       }
 
       if host.starts_with("tcp://") {
@@ -187,7 +187,7 @@ impl Docker {
         if tls_verify.is_some() || cert_path.is_some() {
           let cert_path = match cert_path {
             Some(path) => PathBuf::from(&path),
-            None => dirs::home_dir().ok_or(ErrorKind::NoCertPath)?.join(".docker"),
+            None => dirs::home_dir().ok_or(Error::NoCertPath)?.join(".docker"),
           };
 
           return Docker::with_ssl(
@@ -195,13 +195,13 @@ impl Docker {
             &cert_path.join("key.pem"),
             &cert_path.join("cert.pem"),
             &cert_path.join("ca.pem"),
-          ).chain_err(&mkerr)
+          ).map_err(|_| err)
         }
 
-        return Docker::with_tcp(&host).chain_err(&mkerr)
+        return Docker::with_tcp(&host).map_err(|_| err)
       }
 
-      Err(ErrorKind::UnsupportedScheme(host.clone()).into())
+      Err(Error::UnsupportedScheme(host.clone()).into())
     }
 
     #[cfg(unix)]
@@ -216,7 +216,7 @@ impl Docker {
 
     #[cfg(not(unix))]
     pub fn with_unix_socket(addr: &str) -> Result<Docker> {
-        Err(ErrorKind::UnsupportedScheme(addr.to_owned()).into())
+        Err(Error::UnsupportedScheme(addr.to_owned()).into())
     }
 
     #[cfg(feature = "openssl")]
@@ -227,7 +227,7 @@ impl Docker {
 
     #[cfg(not(feature = "openssl"))]
     pub fn with_ssl(_addr: &str, _key: &Path, _cert: &Path, _ca: &Path) -> Result<Docker> {
-        Err(ErrorKind::SslDisabled.into())
+        Err(Error::SslDisabled.into())
     }
 
     /// Connect using unsecured HTTP.  This is strongly discouraged
@@ -726,11 +726,11 @@ impl Docker {
             if path.extension() == Some(OsStr::new("json")) && path != Path::new("manifest.json") {
                 let stem = path.file_stem().unwrap(); // contains .json
                 let id = stem.to_str()
-                    .ok_or(ErrorKind::Unknown(format!("convert to String: {:?}", stem)))?;
+                    .ok_or(Error::Unknown(format!("convert to String: {:?}", stem)))?;
                 return Ok(ImageId::new(id.to_string()));
             }
         }
-        Err(ErrorKind::Unknown("no expected file: XXXXXX.json".to_owned()).into())
+        Err(Error::Unknown("no expected file: XXXXXX.json".to_owned()).into())
     }
 
     /// Check auth configuration
@@ -1080,7 +1080,7 @@ mod tests {
 
             assert!(match docker.get_file(&container.id, test_file) {
                 Ok(_) => false,
-                Err(Error(ErrorKind::Docker(_), _)) => true, // not found
+                Err(Error::Docker(_)) => true, // not found
                 Err(_) => false,
             });
 
