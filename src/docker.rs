@@ -5,7 +5,6 @@ use hyper::mime::{Mime, SubLevel, TopLevel};
 use hyper::status::StatusCode;
 use std::env;
 use std::ffi::OsStr;
-use std::fmt;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
@@ -60,26 +59,15 @@ pub struct Docker {
     credential: Option<Credential>,
 }
 
-/// Type of general docker error response
 #[derive(Debug, Deserialize)]
-pub struct DockerError {
-    pub message: String,
+pub struct DockerAPIError {
+  pub message: String,
 }
 
-impl fmt::Display for DockerError {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        write!(fmt, "{}", self.message)
-    }
-}
-
-impl ::std::error::Error for DockerError {
-    fn description(&self) -> &str {
-        &self.message
-    }
-
-    fn cause(&self) -> Option<&::std::error::Error> {
-        None
-    }
+impl From<DockerAPIError> for Error {
+  fn from(e: DockerAPIError) -> Self {
+    Error::API { message: e.message }
+  }
 }
 
 /// Deserialize from json string
@@ -87,7 +75,7 @@ fn api_result<D: DeserializeOwned>(res: Response) -> result::Result<D, Error> {
     if res.status.is_success() {
         Ok(serde_json::from_reader::<_, D>(res)?)
     } else {
-        Err(serde_json::from_reader::<_, DockerError>(res)?.into())
+        Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
     }
 }
 
@@ -96,7 +84,7 @@ fn no_content(res: Response) -> result::Result<(), Error> {
     if res.status == StatusCode::NoContent {
         Ok(())
     } else {
-        Err(serde_json::from_reader::<_, DockerError>(res)?.into())
+        Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
     }
 }
 
@@ -108,7 +96,7 @@ fn ignore_result(res: Response) -> result::Result<(), Error> {
         res.bytes().last(); // ignore
         Ok(())
     } else {
-        Err(serde_json::from_reader::<_, DockerError>(res)?.into())
+        Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
     }
 }
 
@@ -374,7 +362,7 @@ impl Docker {
                 if res.status.is_success() {
                     Ok(AttachResponse::new(res))
                 } else {
-                    Err(serde_json::from_reader::<_, DockerError>(res)?.into())
+                    Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
                 }
             })
     }
@@ -539,7 +527,7 @@ impl Docker {
                 if res.status.is_success() {
                     Ok(tar::Archive::new(Box::new(res) as Box<Read>))
                 } else {
-                    Err(serde_json::from_reader::<_, DockerError>(res)?.into())
+                    Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
                 }
             })
     }
@@ -615,7 +603,7 @@ impl Docker {
                 Ok(line?).and_then(|ref line| Ok(serde_json::from_str(line)?))
             })))
         } else {
-            Err(serde_json::from_reader::<_, DockerError>(res)?.into())
+            Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
         }
     }
 
@@ -706,7 +694,7 @@ impl Docker {
                 if res.status.is_success() {
                     Ok(Box::new(res) as Box<Read>)
                 } else {
-                    Err(serde_json::from_reader::<_, DockerError>(res)?.into())
+                    Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
                 }
             })
     }
@@ -726,7 +714,7 @@ impl Docker {
             self.http_client()
                 .post_file(&headers, &format!("/images/load?quiet={}", quiet), path)?;
         if !res.status.is_success() {
-            return Err(serde_json::from_reader::<_, DockerError>(res)?.into());
+            return Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into());
         }
         // read and discard to end of response
         for line in BufReader::new(res).lines() {
@@ -830,7 +818,7 @@ impl Docker {
                 if res.status.is_success() {
                     Ok(Box::new(res) as Box<Read>)
                 } else {
-                    Err(serde_json::from_reader::<_, DockerError>(res)?.into())
+                    Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
                 }
             })
     }
@@ -847,7 +835,7 @@ impl Docker {
             assert_eq!(&buf, "OK");
             Ok(())
         } else {
-            Err(serde_json::from_reader::<_, DockerError>(res)?.into())
+            Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
         }
     }
 
@@ -1095,7 +1083,7 @@ mod tests {
 
             assert!(match docker.get_file(&container.id, test_file) {
                 Ok(_) => false,
-                Err(Error::Docker(_)) => true, // not found
+                Err(DockerAPIError(_)) => true, // not found
                 Err(_) => false,
             });
 

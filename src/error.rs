@@ -1,6 +1,5 @@
 use std::io;
 
-use docker;
 use hyper;
 use serde_json;
 use url;
@@ -21,8 +20,8 @@ pub enum Error {
   #[fail(display = "JSON Error")]
   Json(#[cause] serde_json::error::Error),
 
-  #[fail(display = "Docker Error")]
-  Docker(#[cause] docker::DockerError),
+  #[fail(display = "Docker API Error: {}", message)]
+  API { message: String },
 
   #[fail(display = "Could not connect to Docker at '{}'.", _0)]
   CouldNotConnect(String),
@@ -41,12 +40,6 @@ pub enum Error {
 
   #[fail(display = "unknown error: {}", _0)]
   Unknown(String),
-}
-
-impl From<docker::DockerError> for Error {
-  fn from(e: docker::DockerError) -> Self {
-    Error::Docker(e)
-  }
 }
 
 impl From<serde_json::Error> for Error {
@@ -72,13 +65,3 @@ impl From<std::io::Error> for Error {
     Error::Io(e)
   }
 }
-
-// // Allows adding more context via a &str
-// impl From<Context<&'static str>> for MyError {
-//     fn from(inner: Context<&'static str>) -> MyError {
-//         MyError {
-//             inner: inner.map(|s| s.to_string()),
-//         }
-//     }
-// }
-//
