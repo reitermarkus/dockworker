@@ -10,6 +10,7 @@ use std::io::{BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
 use std::result;
 use std::time::Duration;
+use std::collections::HashMap as Map;
 use url;
 
 use models::{AuthToken, Container, ContainerInfo, ContainerCreateOptions, ContainerFilters, CreateContainerResponse, Credential, ExitStatus, FilesystemChange, Image, ImageId, PrunedImages, RemovedImage, Secret, Swarm, SwarmSpec, SystemInfo, Top, UserPassword, Version};
@@ -476,6 +477,20 @@ impl Docker {
     ///
     /// # API
     /// /secrets/create
+
+    pub fn secret_create(&self, name: &str, data: &str) -> Result<Map<String, String>> {
+      let data = json!({
+        "Name": name,
+        "Data": data,
+      }).to_string();
+
+      let mut headers = self.headers().clone();
+      headers.set(ContentType(Mime(TopLevel::Application, SubLevel::Json, vec![])));
+
+      self.http_client()
+          .post(&self.headers(), &"/secrets/create", &data)
+          .and_then(api_result)
+    }
 
     /// Wait for a container
     ///
