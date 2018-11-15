@@ -15,8 +15,7 @@ use hyper::Client;
 use hyper::Url;
 #[cfg(feature = "openssl")]
 use openssl::{ssl::{SslContext, SslMethod}, x509::X509FileType};
-
-use docker::*;
+use http_client::HttpClient;
 use error::*;
 #[cfg(unix)]
 use unix::HttpUnixConnector;

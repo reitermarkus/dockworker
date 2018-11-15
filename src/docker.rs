@@ -14,6 +14,7 @@ use std::collections::HashMap as Map;
 use url;
 
 use models::{AuthToken, Container, ContainerInfo, ContainerCreateOptions, ContainerFilters, CreateContainerResponse, Credential, ExitStatus, FilesystemChange, Image, ImageId, PrunedImages, RemovedImage, Secret, Swarm, SwarmSpec, SystemInfo, Top, UserPassword, Version};
+use http_client::HttpClient;
 use container::AttachResponse;
 use error::*;
 use hyper_client::HyperClient;
@@ -89,36 +90,6 @@ fn ignore_result(res: Response) -> result::Result<(), Error> {
     } else {
         Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
     }
-}
-
-/// A http client
-pub trait HttpClient {
-    type Err: ::failure::Fail + Send + 'static;
-
-    fn get(&self, headers: &Headers, path: &str) -> result::Result<Response, Self::Err>;
-
-    fn post(
-        &self,
-        headers: &Headers,
-        path: &str,
-        body: &str,
-    ) -> result::Result<Response, Self::Err>;
-
-    fn delete(&self, headers: &Headers, path: &str) -> result::Result<Response, Self::Err>;
-
-    fn post_file(
-        &self,
-        headers: &Headers,
-        path: &str,
-        file: &Path,
-    ) -> result::Result<Response, Self::Err>;
-
-    fn put_file(
-        &self,
-        headers: &Headers,
-        path: &str,
-        file: &Path,
-    ) -> result::Result<Response, Self::Err>;
 }
 
 /// Access to inner HttpClient
@@ -1087,7 +1058,7 @@ mod tests {
 
             assert!(match docker.get_file(&container.id, test_file) {
                 Ok(_) => false,
-                Err(DockerAPIError(_)) => true, // not found
+                Err(Error::API { .. }) => true, // not found
                 Err(_) => false,
             });
 
