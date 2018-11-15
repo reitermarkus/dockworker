@@ -113,6 +113,9 @@ pub use self::top::Top;
 mod orchestration;
 pub use self::orchestration::Orchestration;
 
+mod secret;
+pub use self::secret::Secret;
+
 mod swarm_info;
 pub use self::swarm_info::SwarmInfo;
 

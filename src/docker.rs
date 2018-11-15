@@ -13,7 +13,7 @@ use std::result;
 use std::time::Duration;
 use url;
 
-use models::{AuthToken, Container, ContainerInfo, ContainerCreateOptions, ContainerFilters, CreateContainerResponse, Credential, ExitStatus, FilesystemChange, Image, ImageId, PrunedImages, RemovedImage, Swarm, SwarmSpec, SystemInfo, Top, UserPassword, Version};
+use models::{AuthToken, Container, ContainerInfo, ContainerCreateOptions, ContainerFilters, CreateContainerResponse, Credential, ExitStatus, FilesystemChange, Image, ImageId, PrunedImages, RemovedImage, Secret, Swarm, SwarmSpec, SystemInfo, Top, UserPassword, Version};
 use container::AttachResponse;
 use error::*;
 use hyper_client::HyperClient;
@@ -473,6 +473,21 @@ impl Docker {
           .post(&self.headers(), &format!("/swarm/leave?{}", param.finish()), "")
           .and_then(ignore_result)
     }
+
+    /// Get secrets
+    ///
+    /// # API
+    /// /secrets
+    pub fn secrets(&self) -> Result<Vec<Secret>> {
+      self.http_client()
+          .get(self.headers(), "/secrets")
+          .and_then(api_result)
+    }
+
+    /// Get secrets
+    ///
+    /// # API
+    /// /secrets/create
 
     /// Wait for a container
     ///
