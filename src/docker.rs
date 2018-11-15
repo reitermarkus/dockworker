@@ -61,7 +61,7 @@ pub struct Docker {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct DockerAPIError {
+struct DockerAPIError {
   pub message: String,
 }
 
