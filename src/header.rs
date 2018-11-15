@@ -26,7 +26,7 @@ impl Header for XRegistryAuth {
       return Err(Error::Header);
     }
 
-    base64::decode_config(&raw[0], STANDARD)
+    base64::decode(&raw[0])
       .map_err(|_| Error::Header)
       .and_then(|vec| String::from_utf8(vec).map_err(|_| Error::Header))
       .map(Self::new)
