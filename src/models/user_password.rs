@@ -1,4 +1,6 @@
-#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+use header::XRegistryAuth;
+
+#[derive(Debug, Clone, Serialize)]
 pub struct UserPassword {
   username: String,
   password: String,
@@ -14,5 +16,11 @@ impl UserPassword {
       email: email.into(),
       serveraddress: serveraddress.into(),
     }
+  }
+}
+
+impl From<UserPassword> for XRegistryAuth {
+  fn from(user_password: UserPassword) -> Self {
+    Self::new(serde_json::to_string(&user_password).unwrap_or_default())
   }
 }

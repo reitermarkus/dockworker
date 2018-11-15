@@ -1,20 +1,31 @@
-use models::{AuthToken};
+use header::XRegistryAuth;
+use models::AuthResponse;
 
-#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IdentityToken {
-  identitytoken: String,
+  identity_token: String,
 }
 
-impl IdentityToken {
-  #[allow(dead_code)]
-  pub fn token(&self) -> String {
-    self.identitytoken.clone()
+impl From<String> for IdentityToken {
+  fn from(identity_token: String) -> Self {
+    Self { identity_token }
   }
+}
 
-  #[allow(dead_code)]
-  pub fn from_auth_token(auth_token: &AuthToken) -> Self {
-    Self {
-      identitytoken: auth_token.token(),
-    }
+impl From<AuthResponse> for IdentityToken {
+  fn from(auth_response: AuthResponse) -> Self {
+    auth_response.identity_token.into()
+  }
+}
+
+impl From<IdentityToken> for String {
+  fn from(identity_token: IdentityToken) -> String {
+    identity_token.identity_token.clone()
+  }
+}
+
+impl From<IdentityToken> for XRegistryAuth {
+  fn from(identity_token: IdentityToken) -> Self {
+    Self::new(identity_token)
   }
 }

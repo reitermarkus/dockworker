@@ -12,7 +12,7 @@ use std::time::Duration;
 use std::collections::HashMap as Map;
 use url;
 
-use models::{AuthToken, Container, ContainerInfo, ContainerCreateOptions, ContainerFilters, CreateContainerResponse, Credential, ExitStatus, FilesystemChange, Image, ImageId, PrunedImages, RemovedImage, Secret, Swarm, SwarmSpec, SystemInfo, Top, UserPassword, Version};
+use models::{AuthResponse, Container, ContainerInfo, ContainerCreateOptions, ContainerFilters, CreateContainerResponse, ExitStatus, FilesystemChange, Image, ImageId, PrunedImages, RemovedImage, Secret, Swarm, SwarmSpec, SystemInfo, Top, UserPassword, Version};
 use http_client::HttpClient;
 use container::AttachResponse;
 use error::*;
@@ -47,7 +47,7 @@ pub struct Docker {
     /// http headers used for any requests
     headers: Headers,
     /// access credential for accessing apis
-    credential: Option<Credential>,
+    credential: Option<XRegistryAuth>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -106,8 +106,8 @@ impl Docker {
         }
     }
 
-    pub fn set_credential(&mut self, credential: Credential) {
-        self.credential = Some(credential)
+    pub fn set_credential<A: Into<XRegistryAuth>>(&mut self, auth: A) {
+      self.credential = Some(auth.into())
     }
 
     fn headers(&self) -> &Headers {
@@ -206,10 +206,7 @@ impl Docker {
         debug!("filter: {}", serde_json::to_string(&filters).unwrap());
 
         self.http_client()
-            .get(
-                self.headers(),
-                format!("/containers/json?{}", param.finish()),
-            )
+            .get(self.headers(), format!("/containers/json?{}", param.finish()))
             .and_then(api_result)
     }
 
@@ -567,7 +564,7 @@ impl Docker {
 
         let mut headers = self.headers().clone();
         if let Some(ref credential) = self.credential {
-            headers.set::<XRegistryAuth>(credential.clone().into());
+            headers.set(credential.clone());
         }
         let res =
             self.http_client()
@@ -595,7 +592,7 @@ impl Docker {
         param.append_pair("tag", tag);
         let mut headers = self.headers().clone();
         if let Some(ref credential) = self.credential {
-            headers.set::<XRegistryAuth>(credential.clone().into());
+            headers.set(credential.clone());
         }
         self.http_client()
             .post(
@@ -724,7 +721,7 @@ impl Docker {
         password: &str,
         email: &str,
         serveraddress: &str,
-    ) -> Result<AuthToken> {
+    ) -> Result<AuthResponse> {
         let req = UserPassword::new(
             username.to_string(),
             password.to_string(),

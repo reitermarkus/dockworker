@@ -1,5 +1,5 @@
-mod auth_token;
-pub use self::auth_token::AuthToken;
+mod auth_response;
+pub use self::auth_response::AuthResponse;
 
 
 mod cluster;
@@ -55,9 +55,6 @@ pub use self::create_container_response::CreateContainerResponse;
 
 mod driver;
 pub use self::driver::Driver;
-
-mod credential;
-pub use self::credential::Credential;
 
 mod user_password;
 pub use self::user_password::UserPassword;

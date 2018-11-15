@@ -1,7 +1,7 @@
 extern crate dockworker;
 extern crate hyper;
 
-use dockworker::{Docker, models::{Credential, UserPassword}};
+use dockworker::{Docker, models::UserPassword};
 
 fn main() {
     let mut docker = Docker::from_env().unwrap();
@@ -13,12 +13,12 @@ fn main() {
         .for_each(|_| print!("."));
 
     let serveraddress = "localhost:5000";
-    docker.set_credential(Credential::with_password(UserPassword::new(
+    docker.set_credential(UserPassword::new(
         "someusername",
         "somepassword",
         "someusername@example.com",
         serveraddress,
-    )));
+    ));
 
     println!("pulled: {}:{}", name, tag);
     docker
