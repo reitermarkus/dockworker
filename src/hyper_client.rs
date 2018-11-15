@@ -52,8 +52,8 @@ impl HyperClient {
 
     /// path to unix socket
     #[cfg(unix)]
-    pub fn with_unix_socket(path: &str) -> Self {
-        let conn = HttpUnixConnector::new(path);
+    pub fn with_unix_socket<S: AsRef<str>>(path: S) -> Self {
+        let conn = HttpUnixConnector::new(path.as_ref());
         let pool_config = Config { max_idle: 8 };
         let pool = Pool::with_connector(pool_config, conn);
 
@@ -98,19 +98,19 @@ impl HyperClient {
 impl HttpClient for HyperClient {
     type Err = Error;
 
-    fn get(&self, headers: &Headers, path: &str) -> result::Result<Response, Self::Err> {
-        let url = self.base.join(path)?;
+    fn get<S: AsRef<str>>(&self, headers: &Headers, path: S) -> result::Result<Response, Self::Err> {
+        let url = self.base.join(path.as_ref())?;
         let res = self.client.get(url).headers(headers.clone()).send()?;
         Ok(res)
     }
 
-    fn post(
+    fn post<S: AsRef<str>>(
         &self,
         headers: &Headers,
-        path: &str,
+        path: S,
         body: &str,
     ) -> result::Result<Response, Self::Err> {
-        let url = self.base.join(path)?;
+        let url = self.base.join(path.as_ref())?;
         let res = self.client
             .post(url)
             .headers(headers.clone())
@@ -119,20 +119,20 @@ impl HttpClient for HyperClient {
         Ok(res)
     }
 
-    fn delete(&self, headers: &Headers, path: &str) -> result::Result<Response, Self::Err> {
-        let url = self.base.join(path)?;
+    fn delete<S: AsRef<str>>(&self, headers: &Headers, path: S) -> result::Result<Response, Self::Err> {
+        let url = self.base.join(path.as_ref())?;
         let res = self.client.delete(url).headers(headers.clone()).send()?;
         Ok(res)
     }
 
-    fn post_file(
+    fn post_file<S: AsRef<str>>(
         &self,
         headers: &Headers,
-        path: &str,
+        path: S,
         file: &Path,
     ) -> result::Result<Response, Self::Err> {
         let mut content = File::open(file)?;
-        let url = self.base.join(path)?;
+        let url = self.base.join(path.as_ref())?;
         let res = self.client
             .post(url)
             .headers(headers.clone())
@@ -141,14 +141,14 @@ impl HttpClient for HyperClient {
         Ok(res)
     }
 
-    fn put_file(
+    fn put_file<S: AsRef<str>>(
         &self,
         headers: &Headers,
-        path: &str,
+        path: S,
         file: &Path,
     ) -> result::Result<Response, Self::Err> {
         let mut content = File::open(file)?;
-        let url = self.base.join(path)?;
+        let url = self.base.join(path.as_ref())?;
         let res = self.client
             .put(url)
             .headers(headers.clone())

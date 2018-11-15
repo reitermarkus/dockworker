@@ -11,18 +11,18 @@ use std::{
 pub trait HttpClient {
   type Err: Fail + Send + 'static;
 
-  fn get(&self, headers: &Headers, path: &str)
+  fn get<S: AsRef<str>>(&self, headers: &Headers, path: S)
     -> Result<Response, Self::Err>;
 
-  fn post(&self, headers: &Headers, path: &str, body: &str)
+  fn post<S: AsRef<str>>(&self, headers: &Headers, path: S, body: &str)
     -> Result<Response, Self::Err>;
 
-  fn delete(&self, headers: &Headers, path: &str)
+  fn delete<S: AsRef<str>>(&self, headers: &Headers, path: S)
     -> Result<Response, Self::Err>;
 
-  fn post_file(&self, headers: &Headers, path: &str, file: &Path)
+  fn post_file<S: AsRef<str>>(&self, headers: &Headers, path: S, file: &Path)
     -> Result<Response, Self::Err>;
 
-  fn put_file(&self, headers: &Headers, path: &str, file: &Path)
+  fn put_file<S: AsRef<str>>(&self, headers: &Headers, path: S, file: &Path)
     -> Result<Response, Self::Err>;
 }

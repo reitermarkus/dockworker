@@ -209,7 +209,7 @@ impl Docker {
         self.http_client()
             .get(
                 self.headers(),
-                &format!("/containers/json?{}", param.finish()),
+                format!("/containers/json?{}", param.finish()),
             )
             .and_then(api_result)
     }
@@ -239,7 +239,7 @@ impl Docker {
 
         let json_body = serde_json::to_string(&option)?;
         let mut headers = self.headers().clone();
-        headers.set::<ContentType>(ContentType::json());
+        headers.set(ContentType::json());
         self.http_client()
             .post(&headers, &path, &json_body)
             .and_then(api_result)
@@ -251,7 +251,7 @@ impl Docker {
     /// /containers/{id}/start
     pub fn start_container(&self, id: &str) -> Result<()> {
         self.http_client()
-            .post(self.headers(), &format!("/containers/{}/start", id), "")
+            .post(self.headers(), format!("/containers/{}/start", id), "")
             .and_then(no_content)
     }
 
@@ -265,7 +265,7 @@ impl Docker {
         self.http_client()
             .post(
                 self.headers(),
-                &format!("/containers/{}/stop?{}", id, param.finish()),
+                format!("/containers/{}/stop?{}", id, param.finish()),
                 "",
             )
             .and_then(no_content)
@@ -281,7 +281,7 @@ impl Docker {
         self.http_client()
             .post(
                 self.headers(),
-                &format!("/containers/{}/kill?{}", id, param.finish()),
+                format!("/containers/{}/kill?{}", id, param.finish()),
                 "",
             )
             .and_then(no_content)
@@ -316,7 +316,7 @@ impl Docker {
         self.http_client()
             .post(
                 self.headers(),
-                &format!("/containers/{}/attach?{}", id, param.finish()),
+                format!("/containers/{}/attach?{}", id, param.finish()),
                 "",
             )
             .and_then(|res| {
@@ -334,7 +334,7 @@ impl Docker {
     /// /containers/{id}/top
     pub fn container_top(&self, container: &Container) -> Result<Top> {
         self.http_client()
-            .get(self.headers(), &format!("/containers/{}/top", container.id))
+            .get(self.headers(), format!("/containers/{}/top", container.id))
             .and_then(api_result)
     }
 
@@ -376,7 +376,7 @@ impl Docker {
     pub fn stats(&self, container: &Container) -> Result<StatsReader> {
         let res = self.http_client().get(
             self.headers(),
-            &format!("/containers/{}/stats", container.id),
+            format!("/containers/{}/stats", container.id),
         )?;
         Ok(StatsReader::new(res))
     }
@@ -394,9 +394,9 @@ impl Docker {
       }).to_string();
 
       let mut headers = self.headers().clone();
-      headers.set(ContentType(Mime(TopLevel::Application, SubLevel::Json, vec![])));
+      headers.set(ContentType::json());
       self.http_client()
-          .post(&headers, &"/swarm/init", &data)
+          .post(&headers, "/swarm/init", &data)
           .and_then(api_result)
     }
 
@@ -406,7 +406,7 @@ impl Docker {
     /// /swarm
     pub fn inspect_swarm(&self) -> Result<Swarm> {
       self.http_client()
-          .get(self.headers(), &"/swarm")
+          .get(self.headers(), "/swarm")
           .and_then(api_result)
     }
 
@@ -419,7 +419,7 @@ impl Docker {
       param.append_pair("force", &force.to_string());
 
       self.http_client()
-          .post(&self.headers(), &format!("/swarm/leave?{}", param.finish()), "")
+          .post(&self.headers(), format!("/swarm/leave?{}", param.finish()), "")
           .and_then(ignore_result)
     }
 
@@ -445,7 +445,7 @@ impl Docker {
       }).to_string();
 
       let mut headers = self.headers().clone();
-      headers.set(ContentType(Mime(TopLevel::Application, SubLevel::Json, vec![])));
+      headers.set(ContentType::json());
 
       self.http_client()
           .post(&self.headers(), &"/secrets/create", &data)
@@ -458,7 +458,7 @@ impl Docker {
     /// /containers/{id}/wait
     pub fn wait_container(&self, id: &str) -> Result<ExitStatus> {
         self.http_client()
-            .post(self.headers(), &format!("/containers/{}/wait", id), "")
+            .post(self.headers(), format!("/containers/{}/wait", id), "")
             .and_then(api_result)
     }
 
@@ -480,7 +480,7 @@ impl Docker {
         self.http_client()
             .delete(
                 self.headers(),
-                &format!("/containers/{}?{}", id, param.finish()),
+                format!("/containers/{}?{}", id, param.finish()),
             )
             .and_then(no_content)
     }
@@ -496,7 +496,7 @@ impl Docker {
         self.http_client()
             .get(
                 self.headers(),
-                &format!("/containers/{}/archive?{}", id, param.finish()),
+                format!("/containers/{}/archive?{}", id, param.finish()),
             )
             .and_then(|res| {
                 if res.status.is_success() {
@@ -539,7 +539,7 @@ impl Docker {
         self.http_client()
             .put_file(
                 self.headers(),
-                &format!("/containers/{}/archive?{}", id, param.finish()),
+                format!("/containers/{}/archive?{}", id, param.finish()),
                 src,
             )
             .and_then(ignore_result)
@@ -572,7 +572,7 @@ impl Docker {
         }
         let res =
             self.http_client()
-                .post(&headers, &format!("/images/create?{}", param.finish()), "")?;
+                .post(&headers, format!("/images/create?{}", param.finish()), "")?;
         if res.status.is_success() {
             Ok(Box::new(BufReader::new(res).lines().map(|line| {
                 Ok(line?).and_then(|ref line| Ok(serde_json::from_str(line)?))
@@ -601,7 +601,7 @@ impl Docker {
         self.http_client()
             .post(
                 &headers,
-                &format!("/images/{}/push?{}", name, param.finish()),
+                format!("/images/{}/push?{}", name, param.finish()),
                 "",
             )
             .and_then(ignore_result)
@@ -624,7 +624,7 @@ impl Docker {
         self.http_client()
             .delete(
                 self.headers(),
-                &format!("/images/{}?{}", name, param.finish()),
+                format!("/images/{}?{}", name, param.finish()),
             )
             .and_then(api_result)
     }
@@ -642,7 +642,7 @@ impl Docker {
         self.http_client()
             .post(
                 self.headers(),
-                &format!("/images/prune?{}", param.finish()),
+                format!("/images/prune?{}", param.finish()),
                 "",
             )
             .and_then(api_result)
@@ -654,7 +654,7 @@ impl Docker {
     /// /images/json
     pub fn images(&self, all: bool) -> Result<Vec<Image>> {
         self.http_client()
-            .get(self.headers(), &format!("/images/json?a={}", all as u32))
+            .get(self.headers(), format!("/images/json?a={}", all as u32))
             .and_then(api_result)
     }
 
@@ -664,7 +664,7 @@ impl Docker {
     /// /images/{name}/get
     pub fn export_image(&self, name: &str) -> Result<Box<Read>> {
         self.http_client()
-            .get(self.headers(), &format!("/images/{}/get", name))
+            .get(self.headers(), format!("/images/{}/get", name))
             .and_then(|res| {
                 if res.status.is_success() {
                     Ok(Box::new(res) as Box<Read>)
@@ -687,7 +687,7 @@ impl Docker {
         headers.set::<ContentType>(ContentType(application_tar));
         let res =
             self.http_client()
-                .post_file(&headers, &format!("/images/load?quiet={}", quiet), path)?;
+                .post_file(&headers, format!("/images/load?quiet={}", quiet), path)?;
         if !res.status.is_success() {
             return Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into());
         }
@@ -758,7 +758,7 @@ impl Docker {
         self.http_client()
             .get(
                 self.headers(),
-                &format!("/containers/{}/json", container.id),
+                format!("/containers/{}/json", container.id),
             )
             .and_then(api_result)
     }
@@ -771,7 +771,7 @@ impl Docker {
         self.http_client()
             .get(
                 self.headers(),
-                &format!("/containers/{}/changes", container.id),
+                format!("/containers/{}/changes", container.id),
             )
             .and_then(api_result)
     }
@@ -787,7 +787,7 @@ impl Docker {
         self.http_client()
             .get(
                 self.headers(),
-                &format!("/containers/{}/export", container.id),
+                format!("/containers/{}/export", container.id),
             )
             .and_then(|res| {
                 if res.status.is_success() {
