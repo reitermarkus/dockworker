@@ -12,7 +12,7 @@ use std::time::Duration;
 use std::collections::HashMap as Map;
 use url;
 
-use models::{AuthResponse, Container, ContainerInfo, ContainerCreateOptions, ContainerFilters, CreateContainerResponse, ExitStatus, FilesystemChange, Image, ImageId, PrunedImages, RemovedImage, Secret, SecretInspect, Swarm, SwarmSpec, SystemInfo, Top, UserPassword, Version};
+use models::*;
 use http_client::HttpClient;
 use container::AttachResponse;
 use error::*;
@@ -454,10 +454,34 @@ impl Docker {
     ///
     /// # API
     /// /secrets/{id}
-
     pub fn secret_inspect(&self, id: &str) -> Result<SecretInspect> {
       self.http_client()
           .get(&self.headers(), &format!("/secrets/{}", id))
+          .and_then(api_result)
+    }
+
+    /// List services
+    ///
+    /// # API
+    /// /services
+    pub fn list_services(&self, id: Option<&str>, label: Option<&str>, mode: Option<&str>, name: Option<&str>) -> Result<Vec<Service>> {
+      let mut param = url::form_urlencoded::Serializer::new(String::new());
+
+      let filters = json!({
+        "id": id,
+        "label": label,
+        "mode": mode,
+        "name": name,
+      }).to_string();
+
+      param.append_pair("filters", &filters);
+
+      let url = format!("/services?{}", param.finish());
+
+      println!("{}", url);
+
+      self.http_client()
+          .get(&self.headers(), &url)
           .and_then(api_result)
     }
 

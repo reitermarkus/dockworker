@@ -1,7 +1,6 @@
 mod auth_response;
 pub use self::auth_response::AuthResponse;
 
-
 mod cluster;
 pub use self::cluster::Cluster;
 
@@ -29,6 +28,9 @@ pub use self::container::Container;
 mod container_info;
 pub use self::container_info::ContainerInfo;
 
+mod object_version;
+pub use self::object_version::ObjectVersion;
+
 mod restart_policy;
 pub use self::restart_policy::RestartPolicy;
 
@@ -55,6 +57,9 @@ pub use self::create_container_response::CreateContainerResponse;
 
 mod driver;
 pub use self::driver::Driver;
+
+mod service;
+pub use self::service::Service;
 
 mod user_password;
 pub use self::user_password::UserPassword;
