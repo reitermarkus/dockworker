@@ -31,10 +31,10 @@ pub struct HyperClient {
 }
 
 #[cfg(feature = "openssl")]
-fn ssl_context(addr: &str, key: &Path, cert: &Path, ca: &Path) -> result::Result<Openssl, Context<Error>> {
+fn ssl_context(addr: &str, key: &Path, cert: &Path, ca: &Path) -> result::Result<Openssl, Error> {
     let mkerr = |_| Error::SslError(addr.to_owned());
     let mut context = SslContext::new(SslMethod::Sslv23).map_err(mkerr)?;
-    context.set_CA_file(ca).chain_err(&mkerr)?;
+    context.set_CA_file(ca).map_err(mkerr)?;
     context
         .set_certificate_file(cert, X509FileType::PEM)
         .map_err(mkerr)?;
