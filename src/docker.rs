@@ -8,7 +8,6 @@ use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
-use std::result;
 use std::time::Duration;
 use std::collections::HashMap as Map;
 use url;
@@ -63,7 +62,7 @@ impl From<DockerAPIError> for Error {
 }
 
 /// Deserialize from json string
-fn api_result<D: DeserializeOwned>(res: Response) -> result::Result<D, Error> {
+fn api_result<D: DeserializeOwned>(res: Response) -> Result<D> {
     if res.status.is_success() {
         Ok(serde_json::from_reader::<_, D>(res)?)
     } else {
@@ -72,7 +71,7 @@ fn api_result<D: DeserializeOwned>(res: Response) -> result::Result<D, Error> {
 }
 
 /// Expect 204 NoContent
-fn no_content(res: Response) -> result::Result<(), Error> {
+fn no_content(res: Response) -> Result<()> {
     if res.status == StatusCode::NoContent {
         Ok(())
     } else {
@@ -83,7 +82,7 @@ fn no_content(res: Response) -> result::Result<(), Error> {
 /// Ignore succeed response
 ///
 /// Read whole response body, then ignore it.
-fn ignore_result(res: Response) -> result::Result<(), Error> {
+fn ignore_result(res: Response) -> Result<()> {
     if res.status.is_success() {
         res.bytes().last(); // ignore
         Ok(())
