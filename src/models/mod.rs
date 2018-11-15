@@ -113,6 +113,15 @@ pub use self::orchestration::Orchestration;
 mod secret;
 pub use self::secret::Secret;
 
+mod secret_spec;
+pub use self::secret_spec::SecretSpec;
+
+mod secret_inspect;
+pub use self::secret_inspect::SecretInspect;
+
+mod secret_inspect_spec;
+pub use self::secret_inspect_spec::SecretInspectSpec;
+
 mod swarm_info;
 pub use self::swarm_info::SwarmInfo;
 
@@ -157,6 +166,3 @@ pub use self::state::State;
 
 mod system_info;
 pub use self::system_info::SystemInfo;
-
-mod secret_spec;
-pub use self::secret_spec::SecretSpec;

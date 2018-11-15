@@ -12,7 +12,7 @@ use std::time::Duration;
 use std::collections::HashMap as Map;
 use url;
 
-use models::{AuthResponse, Container, ContainerInfo, ContainerCreateOptions, ContainerFilters, CreateContainerResponse, ExitStatus, FilesystemChange, Image, ImageId, PrunedImages, RemovedImage, Secret, Swarm, SwarmSpec, SystemInfo, Top, UserPassword, Version};
+use models::{AuthResponse, Container, ContainerInfo, ContainerCreateOptions, ContainerFilters, CreateContainerResponse, ExitStatus, FilesystemChange, Image, ImageId, PrunedImages, RemovedImage, Secret, SecretInspect, Swarm, SwarmSpec, SystemInfo, Top, UserPassword, Version};
 use http_client::HttpClient;
 use container::AttachResponse;
 use error::*;
@@ -447,6 +447,17 @@ impl Docker {
 
       self.http_client()
           .post(&self.headers(), &"/secrets/create", &data)
+          .and_then(api_result)
+    }
+
+    /// Inspect a secret
+    ///
+    /// # API
+    /// /secrets/{id}
+
+    pub fn secret_inspect(&self, id: &str) -> Result<SecretInspect> {
+      self.http_client()
+          .get(&self.headers(), &format!("/secrets/{}", id))
           .and_then(api_result)
     }
 
