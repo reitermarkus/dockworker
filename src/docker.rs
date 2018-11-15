@@ -38,22 +38,12 @@ pub const DEFAULT_DOCKER_HOST: &'static str = "unix:///var/run/docker.sock";
 #[cfg(windows)]
 pub const DEFAULT_DOCKER_HOST: &'static str = "tcp://localhost:2375";
 
-/// protocol connect to docker daemon
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
-enum Protocol {
-    /// unix domain socket
-    Unix,
-    /// tcp/ip (BSD like socket)
-    Tcp,
-}
-
 /// Handle to connection to the docker daemon
 #[derive(Debug)]
 pub struct Docker {
     /// http client
     client: HyperClient,
     /// connection protocol
-    protocol: Protocol,
     /// http headers used for any requests
     headers: Headers,
     /// access credential for accessing apis
@@ -138,10 +128,9 @@ pub trait HaveHttpClient {
 }
 
 impl Docker {
-    fn new(client: HyperClient, protocol: Protocol) -> Self {
+    fn new(client: HyperClient) -> Self {
         Self {
             client,
-            protocol,
             headers: Headers::new(),
             credential: None,
         }
@@ -200,7 +189,7 @@ impl Docker {
         // Path, so we don't need scheme.
         let url = addr.into_url()?;
         let client = HyperClient::with_unix_socket(url.path());
-        Ok(Docker::new(client, Protocol::Unix))
+        Ok(Docker::new(client))
     }
 
     #[cfg(not(unix))]
@@ -211,7 +200,7 @@ impl Docker {
     #[cfg(feature = "openssl")]
     pub fn with_ssl(addr: &str, key: &Path, cert: &Path, ca: &Path) -> Result<Docker> {
         let client = HyperClient::with_ssl(addr, key, cert, ca)?;
-        Ok(Docker::new(client, Protocol::Tcp))
+        Ok(Docker::new(client))
     }
 
     #[cfg(not(feature = "openssl"))]
@@ -223,7 +212,7 @@ impl Docker {
     /// everywhere but on Windows when npipe support is not available.
     pub fn with_tcp(addr: &str) -> Result<Docker> {
         let client = HyperClient::with_tcp(addr)?;
-        Ok(Docker::new(client, Protocol::Tcp))
+        Ok(Docker::new(client))
     }
 
     /// List containers
