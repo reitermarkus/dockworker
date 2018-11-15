@@ -26,6 +26,8 @@ use serde_json::{self, Value};
 use signal::Signal;
 use header::XRegistryAuth;
 
+use base64;
+
 /// The default `DOCKER_HOST` address that we will try to connect to.
 #[cfg(unix)]
 pub const DEFAULT_DOCKER_HOST: &'static str = "unix:///var/run/docker.sock";
@@ -437,7 +439,7 @@ impl Docker {
     pub fn secret_create(&self, name: &str, data: &str) -> Result<Map<String, String>> {
       let data = json!({
         "Name": name,
-        "Data": data,
+        "Data": base64::encode(data),
       }).to_string();
 
       let mut headers = self.headers().clone();
