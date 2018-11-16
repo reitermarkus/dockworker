@@ -18,8 +18,6 @@ fn main() -> Result<(), Error> {
   let services = docker.list_services(None, None, None, None)?;
   println!("{:#?}", services);
 
-
-
   for service in services {
     let id = service.id;
     let version = service.version.index;

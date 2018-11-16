@@ -1,6 +1,6 @@
-use serde::{Serialize, Deserialize, ser::Serializer, de::Deserializer};
+use serde::{Serialize, Deserialize, ser::Serializer, de::{self, Deserializer}};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Isolation {
   Default,
   Process,
@@ -30,12 +30,53 @@ impl<'de> Deserialize<'de> for Isolation {
     where D: Deserializer<'de>
   {
     String::deserialize(deserializer)
-      .map(|s| {
+      .and_then(|s| {
         match s.as_str() {
-          "process" => Isolation::Process,
-          "hyperv" => Isolation::HyperV,
-          _ => Isolation::Default,
+          "default" => Ok(Isolation::Default),
+          "process" => Ok(Isolation::Process),
+          "hyperv" => Ok(Isolation::HyperV),
+          unknown => Err(de::Error::unknown_variant(&unknown, &["default", "process", "hyperv"])),
         }
       })
+  }
+}
+
+#[cfg(all(test, unix))]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn serialize_default() {
+    assert_eq!(serde_json::to_string(&Isolation::Default).unwrap(), r#""default""#);
+  }
+
+  #[test]
+  fn serialize_process() {
+    assert_eq!(serde_json::to_string(&Isolation::Process).unwrap(), r#""process""#);
+  }
+
+  #[test]
+  fn serialize_hyperv() {
+    assert_eq!(serde_json::to_string(&Isolation::HyperV).unwrap(), r#""hyperv""#);
+  }
+
+  #[test]
+  fn deserialize_empty() {
+    assert!(serde_json::from_str::<Isolation>(r#""unknown""#).is_err());
+  }
+
+  #[test]
+  fn deserialize_default() {
+    assert_eq!(serde_json::from_str::<Isolation>(r#""default""#).unwrap(), Isolation::Default);
+  }
+
+  #[test]
+  fn deserialize_process() {
+    assert_eq!(serde_json::from_str::<Isolation>(r#""process""#).unwrap(), Isolation::Process);
+  }
+
+  #[test]
+  fn deserialize_hyperv() {
+    assert_eq!(serde_json::from_str::<Isolation>(r#""hyperv""#).unwrap(), Isolation::HyperV);
   }
 }
