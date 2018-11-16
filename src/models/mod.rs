@@ -25,6 +25,39 @@ pub use self::config::Config;
 mod container;
 pub use self::container::Container;
 
+mod endpoint_spec;
+pub use self::endpoint_spec::EndpointSpec;
+
+mod service_spec;
+pub use self::service_spec::ServiceSpec;
+
+mod container_spec;
+pub use self::container_spec::ContainerSpec;
+
+mod isolation;
+pub use self::isolation::Isolation;
+
+mod endpoint;
+pub use self::endpoint::Endpoint;
+
+mod endpoint_port_config;
+pub use self::endpoint_port_config::EndpointPortConfig;
+
+mod update_config;
+pub use self::update_config::UpdateConfig;
+
+mod rollback_config;
+pub use self::rollback_config::RollbackConfig;
+
+mod service_network;
+pub use self::service_network::ServiceNetwork;
+
+mod mode;
+pub use self::mode::Mode;
+
+mod virtual_ip;
+pub use self::virtual_ip::VirtualIP;
+
 mod container_info;
 pub use self::container_info::ContainerInfo;
 
@@ -42,6 +75,15 @@ pub use self::container_host_config::ContainerHostConfig;
 
 mod container_create_options;
 pub use self::container_create_options::ContainerCreateOptions;
+
+mod task_spec;
+pub use self::task_spec::TaskSpec;
+
+mod task_spec_restart_policy;
+pub use self::task_spec_restart_policy::TaskSpecRestartPolicy;
+
+mod placement;
+pub use self::placement::Placement;
 
 mod networking_config;
 pub use self::networking_config::NetworkingConfig;

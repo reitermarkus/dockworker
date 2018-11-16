@@ -435,7 +435,6 @@ impl Docker {
     ///
     /// # API
     /// /secrets/create
-
     pub fn secret_create(&self, name: &str, data: &str) -> Result<Map<String, String>> {
       let data = json!({
         "Name": name,
@@ -476,13 +475,42 @@ impl Docker {
 
       param.append_pair("filters", &filters);
 
-      let url = format!("/services?{}", param.finish());
+      self.http_client()
+          .get(&self.headers(), &format!("/services?{}", param.finish()))
+          .and_then(api_result)
+    }
 
-      println!("{}", url);
+    /// List services
+    ///
+    /// # API
+    /// /services/{id}/update
+    pub fn update_service(&self,
+      id: &str,
+      version: u64, registry_auth_from: Option<&str>, rollback: Option<&str>,
+      spec: ServiceSpec,
+    ) -> Result<()> {
+      let mut param = url::form_urlencoded::Serializer::new(String::new());
+
+      param.append_pair("version", &version.to_string());
+
+      if let Some(registry_auth_from) = registry_auth_from {
+        param.append_pair("registryAuthFrom", &registry_auth_from);
+      }
+
+      if let Some(rollback) = rollback {
+        param.append_pair("rollback", &rollback);
+      }
+
+      let mut headers = self.headers().clone();
+      if let Some(ref credential) = self.credential {
+        headers.set(credential.clone());
+      }
+
+      let body = serde_json::to_string(&spec)?;
 
       self.http_client()
-          .get(&self.headers(), &url)
-          .and_then(api_result)
+          .post(&headers, &format!("/services/{}/update?{}", id, param.finish()), &body)
+          .and_then(ignore_result)
     }
 
     /// Wait for a container
