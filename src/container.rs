@@ -1,5 +1,6 @@
 use byteorder::{BigEndian, ReadBytesExt};
-use hyper::client::response::Response;
+use hyper::Response;
+use hyper::Body;
 use std::io::{self, Read};
 use std::rc::Rc;
 use std::cell::{Ref, RefCell, RefMut};
@@ -194,11 +195,11 @@ impl Read for ContainerStdio {
 /// Response of attach to container api
 #[derive(Debug)]
 pub struct AttachResponse {
-    res: Response,
+    res: Response<Body>,
 }
 
 impl AttachResponse {
-    pub fn new(res: Response) -> Self {
+    pub fn new(res: Response<Body>) -> Self {
         Self { res }
     }
 }
@@ -236,17 +237,17 @@ impl From<AttachResponse> for AttachContainer {
 
 #[derive(Debug)]
 struct AttachResponseIter {
-    res: Response,
+    res: Response<Body>,
 }
 
 impl AttachResponseIter {
-    fn new(res: Response) -> Self {
+    fn new(res: Response<Body>) -> Self {
         Self { res }
     }
 }
 
-impl From<Response> for AttachResponseIter {
-    fn from(res: Response) -> Self {
+impl From<Response<Body>> for AttachResponseIter {
+    fn from(res: Response<Body>) -> Self {
         Self::new(res)
     }
 }
@@ -258,7 +259,7 @@ impl Iterator for AttachResponseIter {
 
         let mut buf = [0u8; 8];
         // read header
-        if let Err(err) = self.res.read_exact(&mut buf) {
+        if let Err(err) = self.res.body().read_exact(&mut buf) {
             return if err.kind() == io::ErrorKind::UnexpectedEof {
                 None // end of stream
             } else {
@@ -269,7 +270,7 @@ impl Iterator for AttachResponseIter {
         let mut frame_size_raw = &buf[4..];
         let frame_size = frame_size_raw.read_u32::<BigEndian>().unwrap();
         let mut frame = vec![0; frame_size as usize];
-        if let Err(io) = self.res.read_exact(&mut frame) {
+        if let Err(io) = self.res.body().read_exact(&mut frame) {
             return Some(Err(io));
         }
         match buf[0] {

@@ -1,8 +1,9 @@
-use hyper::client::response::Response;
-use hyper::client::IntoUrl;
-use hyper::header::{ContentType, Headers};
-use hyper::mime::{Mime, SubLevel, TopLevel};
-use hyper::status::StatusCode;
+use hyper::Response;
+use http::StatusCode;
+use hyper::HeaderMap;
+use hyper::Chunk;
+use futures::Future;
+use futures::Stream;
 use std::env;
 use std::ffi::OsStr;
 use std::fs::File;
@@ -11,6 +12,8 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 use std::collections::HashMap as Map;
 use url;
+use hyper::header::CONTENT_TYPE;
+use hyper::client::connect::{Connect};
 
 use models::*;
 use http_client::HttpClient;
@@ -24,7 +27,7 @@ use tar::{self, Archive};
 use serde::de::DeserializeOwned;
 use serde_json::{self, Value};
 use signal::Signal;
-use header::XRegistryAuth;
+use header::{X_REGISTRY_AUTH, XRegistryAuth};
 
 use base64;
 
@@ -42,12 +45,15 @@ pub const DEFAULT_DOCKER_HOST: &'static str = "tcp://localhost:2375";
 
 /// Handle to connection to the docker daemon
 #[derive(Debug)]
-pub struct Docker {
+pub struct Docker<C>
+where
+  C: Connect + Sync
+{
     /// http client
-    client: HyperClient,
+    client: HyperClient<C>,
     /// connection protocol
     /// http headers used for any requests
-    headers: Headers,
+    headers: HeaderMap,
     /// access credential for accessing apis
     credential: Option<XRegistryAuth>,
 }
@@ -64,32 +70,32 @@ impl From<DockerAPIError> for Error {
 }
 
 /// Deserialize from json string
-fn api_result<D: DeserializeOwned>(res: Response) -> Result<D> {
-    if res.status.is_success() {
+fn api_result<D: DeserializeOwned>(res: Response<Body>) -> Result<D> {
+    if res.status().is_success() {
         Ok(serde_json::from_reader::<_, D>(res)?)
     } else {
-        Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
+        Err(serde_json::from_reader::<_, DockerAPIError>(res.body())?.into())
     }
 }
 
 /// Expect 204 NoContent
-fn no_content(res: Response) -> Result<()> {
-    if res.status == StatusCode::NoContent {
+fn no_content(res: Response<Body>) -> Result<()> {
+    if res.status() == StatusCode::NO_CONTENT {
         Ok(())
     } else {
-        Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
+        Err(serde_json::from_reader::<_, DockerAPIError>(res.body())?.into())
     }
 }
 
 /// Ignore succeed response
 ///
 /// Read whole response body, then ignore it.
-fn ignore_result(res: Response) -> Result<()> {
-    if res.status.is_success() {
+fn ignore_result(res: Response<Body>) -> Result<()> {
+    if res.status().is_success() {
         res.bytes().last(); // ignore
         Ok(())
     } else {
-        Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
+        Err(serde_json::from_reader::<_, DockerAPIError>(res.body())?.into())
     }
 }
 
@@ -99,11 +105,14 @@ pub trait HaveHttpClient {
     fn http_client(&self) -> &Self::Client;
 }
 
-impl Docker {
-    fn new(client: HyperClient) -> Self {
+impl<C> Docker<C>
+where
+  C: Connect + Sync
+{
+    fn new(client: HyperClient<C>) -> Self {
         Self {
             client,
-            headers: Headers::new(),
+            headers: HeaderMap::new(),
             credential: None,
         }
     }
@@ -112,7 +121,7 @@ impl Docker {
       self.credential = Some(auth.into())
     }
 
-    fn headers(&self) -> &Headers {
+    fn headers(&self) -> &HeaderMap {
         &self.headers
     }
 
@@ -121,13 +130,13 @@ impl Docker {
     /// `DOCKER_TLS_VERIFY`, `DOCKER_CERT_PATH` and `DOCKER_CONFIG`, and we
     /// try to interpret these as much like the standard `docker` client as
     /// possible.
-    pub fn from_env() -> Result<Docker> {
+    pub fn from_env() -> Result<Docker<C>> {
       let host = env::var("DOCKER_HOST").unwrap_or(DEFAULT_DOCKER_HOST.to_string());
 
       // Dispatch to the correct connection function.
       let err = Error::CouldNotConnect(host.clone());
       if host.starts_with("unix://") {
-        return Docker::with_unix_socket(&host).map_err(|_| err)
+        return Self::with_unix_socket(&host).map_err(|_| err)
       }
 
       if host.starts_with("tcp://") {
@@ -140,7 +149,7 @@ impl Docker {
             None => dirs::home_dir().ok_or(Error::NoCertPath)?.join(".docker"),
           };
 
-          return Docker::with_ssl(
+          return Self::with_ssl(
             &host,
             &cert_path.join("key.pem"),
             &cert_path.join("cert.pem"),
@@ -148,14 +157,14 @@ impl Docker {
           ).map_err(|_| err)
         }
 
-        return Docker::with_tcp(&host).map_err(|_| err)
+        return Self::with_tcp(&host).map_err(|_| err)
       }
 
       Err(Error::UnsupportedScheme(host.clone()).into())
     }
 
     #[cfg(unix)]
-    pub fn with_unix_socket(addr: &str) -> Result<Docker> {
+    pub fn with_unix_socket(addr: &str) -> Result<Docker<C>> {
         // This ensures that using a fully-qualified path --
         // e.g. unix://.... -- works.  The unix socket provider expects a
         // Path, so we don't need scheme.
@@ -165,27 +174,34 @@ impl Docker {
     }
 
     #[cfg(not(unix))]
-    pub fn with_unix_socket(addr: &str) -> Result<Docker> {
+    pub fn with_unix_socket<C>(addr: &str) -> Result<Docker<C>> {
         Err(Error::UnsupportedScheme(addr.to_owned()).into())
     }
 
-    #[cfg(feature = "openssl")]
-    pub fn with_ssl(addr: &str, key: &Path, cert: &Path, ca: &Path) -> Result<Docker> {
-        let client = HyperClient::with_ssl(addr, key, cert, ca)?;
-        Ok(Docker::new(client))
+    pub fn with_ssl(_addr: &str, _key: &Path, _cert: &Path, _ca: &Path) -> Result<Docker<C>> {
+        Err(Error::UnsupportedScheme(addr.to_owned()).into())
+    }
+    pub fn with_tcp(addr: &str) -> Result<Docker<C>> {
+        Err(Error::UnsupportedScheme(addr.to_owned()).into())
     }
 
-    #[cfg(not(feature = "openssl"))]
-    pub fn with_ssl(_addr: &str, _key: &Path, _cert: &Path, _ca: &Path) -> Result<Docker> {
-        Err(Error::SslDisabled.into())
-    }
+    // #[cfg(feature = "openssl")]
+    // pub fn with_ssl(addr: &str, key: &Path, cert: &Path, ca: &Path) -> Result<Docker<C>> {
+    //     let client = HyperClient::with_ssl(addr, key, cert, ca)?;
+    //     Ok(Docker::new(client))
+    // }
+    //
+    // #[cfg(not(feature = "openssl"))]
+    // pub fn with_ssl(_addr: &str, _key: &Path, _cert: &Path, _ca: &Path) -> Result<Docker<C>> {
+    //     Err(Error::SslDisabled.into())
+    // }
 
-    /// Connect using unsecured HTTP.  This is strongly discouraged
-    /// everywhere but on Windows when npipe support is not available.
-    pub fn with_tcp(addr: &str) -> Result<Docker> {
-        let client = HyperClient::with_tcp(addr)?;
-        Ok(Docker::new(client))
-    }
+    // /// Connect using unsecured HTTP.  This is strongly discouraged
+    // /// everywhere but on Windows when npipe support is not available.
+    // pub fn with_tcp(addr: &str) -> Result<Docker<C>> {
+    //     let client = HyperClient::with_tcp(addr)?;
+    //     Ok(Docker::new(client))
+    // }
 
     /// List containers
     ///
@@ -237,7 +253,7 @@ impl Docker {
 
         let json_body = serde_json::to_string(&option)?;
         let mut headers = self.headers().clone();
-        headers.set(ContentType::json());
+        headers.insert(CONTENT_TYPE, "text/json".parse().unwrap());
         self.http_client()
             .post(&headers, &path, &json_body)
             .and_then(api_result)
@@ -318,10 +334,10 @@ impl Docker {
                 "",
             )
             .and_then(|res| {
-                if res.status.is_success() {
+                if res.status().is_success() {
                     Ok(AttachResponse::new(res))
                 } else {
-                    Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
+                    Err(serde_json::from_reader::<_, DockerAPIError>(res.body())?.into())
                 }
             })
     }
@@ -392,7 +408,7 @@ impl Docker {
       }).to_string();
 
       let mut headers = self.headers().clone();
-      headers.set(ContentType::json());
+      headers.insert(CONTENT_TYPE, "text/json".parse().unwrap());
       self.http_client()
           .post(&headers, "/swarm/init", &data)
           .and_then(api_result)
@@ -442,7 +458,7 @@ impl Docker {
       }).to_string();
 
       let mut headers = self.headers().clone();
-      headers.set(ContentType::json());
+      headers.insert(CONTENT_TYPE, "text/json".parse().unwrap());
 
       self.http_client()
           .post(&self.headers(), &"/secrets/create", &data)
@@ -503,7 +519,7 @@ impl Docker {
 
       let mut headers = self.headers().clone();
       if let Some(ref credential) = self.credential {
-        headers.set(credential.clone());
+        headers.insert(X_REGISTRY_AUTH, credential.clone().into());
       }
 
       let body = serde_json::to_string(&spec)?;
@@ -560,10 +576,10 @@ impl Docker {
                 format!("/containers/{}/archive?{}", id, param.finish()),
             )
             .and_then(|res| {
-                if res.status.is_success() {
-                    Ok(tar::Archive::new(Box::new(res) as Box<Read>))
+                if res.status().is_success() {
+                    Ok(tar::Archive::new(Box::new(res.body()) as Box<Read>))
                 } else {
-                    Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
+                    Err(serde_json::from_reader::<_, DockerAPIError>(res.body())?.into())
                 }
             })
     }
@@ -629,17 +645,17 @@ impl Docker {
 
         let mut headers = self.headers().clone();
         if let Some(ref credential) = self.credential {
-            headers.set(credential.clone());
+          headers.insert(X_REGISTRY_AUTH, credential.clone().into());
         }
         let res =
             self.http_client()
                 .post(&headers, format!("/images/create?{}", param.finish()), "")?;
-        if res.status.is_success() {
-            Ok(Box::new(BufReader::new(res).lines().map(|line| {
+        if res.status().is_success() {
+            Ok(Box::new(BufReader::new(res.body()).lines().map(|line| {
                 Ok(line?).and_then(|ref line| Ok(serde_json::from_str(line)?))
             })))
         } else {
-            Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
+            Err(serde_json::from_reader::<_, DockerAPIError>(res.body())?.into())
         }
     }
 
@@ -657,7 +673,7 @@ impl Docker {
         param.append_pair("tag", tag);
         let mut headers = self.headers().clone();
         if let Some(ref credential) = self.credential {
-            headers.set(credential.clone());
+          headers.insert(X_REGISTRY_AUTH, credential.clone().into());
         }
         self.http_client()
             .post(
@@ -727,10 +743,10 @@ impl Docker {
         self.http_client()
             .get(self.headers(), format!("/images/{}/get", name))
             .and_then(|res| {
-                if res.status.is_success() {
+                if res.status().is_success() {
                     Ok(Box::new(res) as Box<Read>)
                 } else {
-                    Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
+                    Err(serde_json::from_reader::<_, DockerAPIError>(res.body())?.into())
                 }
             })
     }
@@ -744,13 +760,12 @@ impl Docker {
     /// /images/load
     pub fn load_image(&self, quiet: bool, path: &Path) -> Result<ImageId> {
         let mut headers = self.headers().clone();
-        let application_tar = Mime(TopLevel::Application, SubLevel::Ext("x-tar".into()), vec![]);
-        headers.set::<ContentType>(ContentType(application_tar));
+        headers.insert(CONTENT_TYPE, "application/x-tar".parse().unwrap());
         let res =
             self.http_client()
                 .post_file(&headers, format!("/images/load?quiet={}", quiet), path)?;
-        if !res.status.is_success() {
-            return Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into());
+        if !res.status().is_success() {
+            return Err(serde_json::from_reader::<_, DockerAPIError>(res.body())?.into());
         }
         // read and discard to end of response
         for line in BufReader::new(res).lines() {
@@ -795,7 +810,7 @@ impl Docker {
         );
         let json_body = serde_json::to_string(&req)?;
         let mut headers = self.headers().clone();
-        headers.set(ContentType::json());
+        headers.insert(CONTENT_TYPE, "text/json".parse().unwrap());
         self.http_client()
             .post(&headers, "/auth", &json_body)
             .and_then(api_result)
@@ -851,10 +866,10 @@ impl Docker {
                 format!("/containers/{}/export", container.id),
             )
             .and_then(|res| {
-                if res.status.is_success() {
+                if res.status().is_success() {
                     Ok(Box::new(res) as Box<Read>)
                 } else {
-                    Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
+                    Err(serde_json::from_reader::<_, DockerAPIError>(res.body())?.into())
                 }
             })
     }
@@ -865,13 +880,13 @@ impl Docker {
     /// /_ping
     pub fn ping(&self) -> Result<()> {
         let mut res = self.http_client().get(self.headers(), "/_ping")?;
-        if res.status.is_success() {
+        if res.status().is_success() {
             let mut buf = String::new();
             res.read_to_string(&mut buf)?;
             assert_eq!(&buf, "OK");
             Ok(())
         } else {
-            Err(serde_json::from_reader::<_, DockerAPIError>(res)?.into())
+            Err(serde_json::from_reader::<_, DockerAPIError>(res.body())?.into())
         }
     }
 
@@ -886,11 +901,15 @@ impl Docker {
     }
 }
 
-impl HaveHttpClient for Docker {
-    type Client = HyperClient;
-    fn http_client(&self) -> &Self::Client {
-        &self.client
-    }
+impl<C> HaveHttpClient for Docker<C>
+where
+  C: Connect + Sync
+{
+  type Client = HyperClient<C>;
+
+  fn http_client(&self) -> &Self::Client {
+    &self.client
+  }
 }
 
 #[cfg(all(test, unix))]
@@ -1005,7 +1024,7 @@ mod tests {
         );
     }
 
-    fn pull_image(docker: &Docker, name: &str, tag: &str) {
+    fn pull_image<C>(docker: &Docker<C>, name: &str, tag: &str) {
         assert!(
             docker
                 .create_image(name, tag)
@@ -1034,7 +1053,7 @@ mod tests {
         assert!(remove_file("dockworker_test_alpine.tar").is_ok());
     }
 
-    fn with_image<F>(docker: &Docker, name: &str, tag: &str, f: F)
+    fn with_image<C, F>(docker: &Docker<C>, name: &str, tag: &str, f: F)
     where
         F: Fn(&str, &str),
     {

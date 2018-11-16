@@ -1,5 +1,5 @@
 use hyper;
-use hyper::net::{NetworkConnector, NetworkStream};
+//use hyper::net::{NetworkConnector, NetworkStream};
 use std::fmt;
 use std::io;
 use std::io::{ErrorKind, Read, Write};

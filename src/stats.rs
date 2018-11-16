@@ -1,4 +1,4 @@
-use hyper::client::response::Response;
+use hyper::Response;
 use std::io::{BufRead, BufReader};
 use std::iter;
 
@@ -8,19 +8,19 @@ use error::*;
 
 /// response of /containers/{}/stats api
 #[derive(Debug)]
-pub struct StatsReader {
-    buf: BufReader<Response>,
+pub struct StatsReader<'a> {
+    buf: BufReader<&'a String>,
 }
 
-impl StatsReader {
-    pub fn new(response: Response) -> Self {
+impl<'a> StatsReader<'a> {
+    pub fn new(response: Response<Body>) -> Self {
         Self {
             buf: BufReader::new(response),
         }
     }
 }
 
-impl iter::Iterator for StatsReader {
+impl<'a> iter::Iterator for StatsReader<'a> {
     type Item = Result<Stats>;
 
     fn next(&mut self) -> Option<Self::Item> {

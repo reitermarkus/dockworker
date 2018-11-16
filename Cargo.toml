@@ -21,14 +21,19 @@ maintenance = { status = "actively-developed" }
 default = []
 
 # Enable OpenSSL both directly and for Hyper.
-ssl = ["openssl", "hyper/ssl"]
+ssl = ["openssl", "hyper-tls"]
 
 [dependencies]
 base64 = "0.9"
 byteorder = "1.2"
+bytes = "0.4"
 dirs = "1.0"
 failure = "0.1"
-hyper = { version = "0.9", default-features = false }
+http = "0.1"
+futures = "*"
+hyper = "0.12"
+hyper-tls = { version = "0.3", optional = true }
+hyperlocal = "0.6"
 log = "0.4"
 nix = "0.11"
 openssl = { version = "0.7", optional = true }

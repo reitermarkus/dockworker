@@ -2,11 +2,15 @@
 #![doc(html_root_url = "https://ghmlee.github.io/rust-docker/doc")]
 
 extern crate base64;
+extern crate bytes;
 extern crate byteorder;
 extern crate dirs;
 #[macro_use]
 extern crate failure;
+extern crate http;
+extern crate futures;
 extern crate hyper;
+extern crate hyperlocal;
 #[macro_use]
 extern crate log;
 #[cfg(windows)]
@@ -37,7 +41,5 @@ pub mod stats;
 mod memory_stream;
 pub mod models;
 mod test;
-#[cfg(unix)]
-mod unix;
 
 pub use docker::Docker;

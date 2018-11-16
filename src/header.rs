@@ -1,14 +1,15 @@
 use std::fmt;
 
 use base64;
-use hyper::header::{Header, HeaderFormat};
-use hyper::error::Result;
-use hyper::Error;
+use bytes::Bytes;
+use hyper::header::{HeaderName, HeaderValue};
 
 #[derive(Debug, Clone)]
 pub struct XRegistryAuth {
   body: String,
 }
+
+pub const X_REGISTRY_AUTH: HeaderName = HeaderName::from_static("X-Registry-Auth");
 
 impl XRegistryAuth {
   pub fn new<S: Into<String>>(body: S) -> Self {
@@ -16,27 +17,21 @@ impl XRegistryAuth {
   }
 }
 
-impl Header for XRegistryAuth {
-  fn header_name() -> &'static str {
-    "X-Registry-Auth"
-  }
+impl From<HeaderValue> for XRegistryAuth {
+  fn from(header_value: HeaderValue) -> Self {
+    let data = base64::decode(&header_value.as_bytes()).ok()
+      .and_then(|s| String::from_utf8(s).ok())
+      .unwrap_or(String::new());
 
-  fn parse_header(raw: &[Vec<u8>]) -> Result<Self> {
-    if raw.len() != 1 {
-      return Err(Error::Header);
-    }
-
-    base64::decode(&raw[0])
-      .map_err(|_| Error::Header)
-      .and_then(|vec| String::from_utf8(vec).map_err(|_| Error::Header))
-      .map(Self::new)
+    Self::new(data)
   }
 }
 
-impl HeaderFormat for XRegistryAuth {
-  fn fmt_header(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    let b64 = base64::encode(&self.body);
-    debug!("{}: {}", Self::header_name(), b64);
-    write!(f, "{}", b64)
+impl From<XRegistryAuth> for HeaderValue {
+  fn from(auth: XRegistryAuth) -> Self {
+    Self {
+      inner: Bytes::from(base64::encode(&auth.body).as_bytes()),
+      is_sensitive: true,
+    }
   }
 }

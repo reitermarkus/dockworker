@@ -2,7 +2,7 @@ use std::io;
 
 use hyper;
 use serde_json;
-use url;
+use http;
 
 pub type Result<T> = ::std::result::Result<T, Error>;
 
@@ -11,8 +11,11 @@ pub enum Error {
   #[fail(display = "Connection Error")]
   Connection(#[cause] hyper::Error),
 
-  #[fail(display = "API Error")]
-  Url(#[cause] hyper::error::ParseError),
+  #[fail(display = "invalid URI")]
+  Url(#[cause] http::uri::InvalidUri),
+
+  #[fail(display = "invalid URI parts")]
+  UrlParts(#[cause] http::uri::InvalidUriParts),
 
   #[fail(display = "IO Error")]
   Io(#[cause] io::Error),
@@ -54,9 +57,15 @@ impl From<hyper::Error> for Error {
   }
 }
 
-impl From<url::ParseError> for Error {
-  fn from(e: url::ParseError) -> Self {
+impl From<http::uri::InvalidUri> for Error {
+  fn from(e: http::uri::InvalidUri) -> Self {
     Error::Url(e)
+  }
+}
+
+impl From<http::uri::InvalidUriParts> for Error {
+  fn from(e: http::uri::InvalidUriParts) -> Self {
+    Error::UrlParts(e)
   }
 }
 
