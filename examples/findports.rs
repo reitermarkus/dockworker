@@ -7,9 +7,9 @@ use dockworker::{Docker, models::ContainerFilters};
 fn find_all_exported_ports() -> Result<(), Error> {
   let docker = Docker::from_env()?;
   let filter = ContainerFilters::new();
-  let containers = docker.list_containers(None, None, None, filter)?;
+  let containers = docker.container_list(None, None, None, filter)?;
   for container in &containers {
-    let info = docker.container_info(&container)?;
+    let info = docker.container_inspect(&container)?;
 
     // Uncomment this to dump everything we know about a container.
     // println!("{:#?}", &info);

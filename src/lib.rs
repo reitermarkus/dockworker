@@ -34,10 +34,9 @@ mod http_client;
 pub mod process;
 pub mod signal;
 pub mod stats;
-mod memory_stream;
 pub mod models;
-mod test;
 #[cfg(unix)]
 mod unix;
+pub(crate) mod api;
 
 pub use docker::Docker;

@@ -9,13 +9,13 @@ fn main() -> Result<(), Error> {
 
   println!("{:#?}", docker.system_info()?.swarm.local_node_state);
 
-  let swarm_id = docker.init_swarm(None, None, None, None)?;
+  let swarm_id = docker.swarm_init(None, None, None, None)?;
   println!("{:#?}", swarm_id);
 
-  let swarm_info = docker.inspect_swarm()?;
+  let swarm_info = docker.swarm_inspect()?;
   println!("{:#?}", swarm_info);
 
-  docker.leave_swarm(true)?;
+  docker.swarm_leave(true)?;
 
   Ok(())
 }

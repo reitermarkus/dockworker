@@ -38,6 +38,9 @@ pub enum Error {
   #[fail(display = "Do not know how to connect to Docker at '{}'.", _0)]
   UnsupportedScheme(String),
 
+  #[fail(display = "This Docker API feature is not implemented yet. PRs welcome!")]
+  NotImplemented,
+
   #[fail(display = "unknown error: {}", _0)]
   Unknown(String),
 }

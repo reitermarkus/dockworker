@@ -8,7 +8,7 @@ fn main() {
     env_logger::init();
     let docker = Docker::from_env().unwrap();
     let id = docker
-        .load_image(false, Path::new("image.tar"))
+        .image_load(false, Path::new("image.tar"))
         .expect("prepare a tar-archive like: $docker save busybox > image.tar");
     println!("loaded: {}", id);
 }

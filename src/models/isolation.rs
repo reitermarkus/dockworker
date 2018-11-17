@@ -41,7 +41,7 @@ impl<'de> Deserialize<'de> for Isolation {
   }
 }
 
-#[cfg(all(test, unix))]
+#[cfg(test)]
 mod tests {
   use super::*;
 

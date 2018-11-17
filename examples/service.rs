@@ -9,13 +9,13 @@ fn main() -> Result<(), Error> {
 
   let serveraddress = "localhost:5000";
   docker.set_credential(AuthConfig::new(
-      "someusername",
-      "somepassword",
-      "someusername@example.com",
-      serveraddress,
+    "someusername",
+    "somepassword",
+    "someusername@example.com",
+    serveraddress,
   ));
 
-  let services = docker.list_services(None, None, None, None)?;
+  let services = docker.service_list(None, None, None, None)?;
   println!("{:#?}", services);
 
   for service in services {
@@ -28,7 +28,7 @@ fn main() -> Result<(), Error> {
 
     spec.mode = Mode::Replicated { replicas: 2 };
 
-    docker.update_service(&id, version, None, None, spec)?;
+    docker.service_update(&id, version, None, None, spec)?;
   }
 
   Ok(())

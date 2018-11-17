@@ -6,6 +6,6 @@ fn main() {
     let docker = Docker::from_env().unwrap();
     let mut create = ContainerCreateOptions::new("hello-world:linux");
     create.tty(true);
-    let container = docker.create_container(Some("testing"), &create).unwrap();
-    docker.start_container(&container.id).unwrap();
+    let container = docker.container_create(Some("testing"), &create).unwrap();
+    docker.container_start(&container.id).unwrap();
 }

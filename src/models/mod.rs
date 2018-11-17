@@ -22,6 +22,9 @@ pub use self::cluster_version::ClusterVersion;
 mod config;
 pub use self::config::Config;
 
+mod id_response;
+pub use self::id_response::IdResponse;
+
 mod container;
 pub use self::container::Container;
 
@@ -118,8 +121,20 @@ pub use self::details::Details;
 mod component;
 pub use self::component::Component;
 
-mod version;
-pub use self::version::Version;
+mod system_version_response;
+pub use self::system_version_response::SystemVersionResponse;
+
+mod system_data_usage_response;
+pub use self::system_data_usage_response::SystemDataUsageResponse;
+
+mod system_events_response;
+pub use self::system_events_response::SystemEventsResponse;
+
+mod unlock_key_response;
+pub use self::unlock_key_response::UnlockKeyResponse;
+
+mod system_version_response_platform;
+pub use self::system_version_response_platform::SystemVersionResponsePlatform;
 
 mod host_config;
 pub use self::host_config::HostConfig;

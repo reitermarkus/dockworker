@@ -8,7 +8,7 @@ fn main() {
 
     let (name, tag) = ("alpine", "latest");
     docker
-        .create_image(name, tag)
+        .image_create(name, tag)
         .unwrap()
         .for_each(|_| print!("."));
 
@@ -22,7 +22,7 @@ fn main() {
 
     println!("pulled: {}:{}", name, tag);
     docker
-        .push_image(&format!("{}/{}", serveraddress, name), tag)
+        .image_push(&format!("{}/{}", serveraddress, name), tag)
         .unwrap();
     println!("pushed: {}:{}", name, tag);
 }

@@ -11,10 +11,10 @@ fn main() {
     let mut create = ContainerCreateOptions::new("hello-world:linux");
     create.host_config(host_config);
 
-    let container = docker.create_container(Some("testing"), &create).unwrap();
-    docker.start_container(&container.id).unwrap();
+    let container = docker.container_create(Some("testing"), &create).unwrap();
+    docker.container_start(&container.id).unwrap();
     let res = docker
-        .attach_container(&container.id, None, true, true, false, true, false)
+        .container_attach(&container.id, None, true, true, false, true, false)
         .unwrap();
     let cont: AttachContainer = res.into();
     let mut line_reader = BufReader::new(cont.stdout);

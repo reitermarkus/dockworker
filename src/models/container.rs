@@ -23,3 +23,40 @@ impl std::fmt::Display for Container {
     write!(f, "{}", self.id)
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  use serde_json;
+
+  #[test]
+  fn deserialize() {
+    serde_json::from_str::<Vec<Container>>(&r#"
+      [
+        {
+          "Id": "ed3221f4adc05b9ecfbf56b1aa76d4e6e70d5b73b3876c322fc10d017c64ca86",
+          "Names": ["/rust"],
+          "Image": "ghmlee/rust:latest",
+          "Command": "bash",
+          "Created": 1439434052,
+          "Ports": [
+            {
+              "IP": "0.0.0.0",
+              "PrivatePort": 8888,
+              "PublicPort": 8888,
+              "Type": "tcp"
+            }
+          ],
+          "SizeRootFs": 253602755,
+          "Labels": {},
+          "Status": "Exited (137) 12 hours ago",
+          "HostConfig": {
+            "NetworkMode": "default"
+          },
+          "SizeRw": 10832473
+        }
+      ]
+    "#).unwrap();
+  }
+}

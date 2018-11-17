@@ -4,7 +4,7 @@ use dockworker::Docker;
 
 fn main() {
     let docker = Docker::from_env().unwrap();
-    let images = docker.images(false).unwrap();
+    let images = docker.image_list(false).unwrap();
 
     for image in &images {
         println!(
