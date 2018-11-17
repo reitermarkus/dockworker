@@ -2,13 +2,13 @@ extern crate failure;
 use failure::Error;
 
 extern crate dockworker;
-use dockworker::{Docker, models::{Mode, UserPassword}};
+use dockworker::{Docker, models::{Mode, AuthConfig}};
 
 fn main() -> Result<(), Error> {
   let mut docker = Docker::from_env()?;
 
   let serveraddress = "localhost:5000";
-  docker.set_credential(UserPassword::new(
+  docker.set_credential(AuthConfig::new(
       "someusername",
       "somepassword",
       "someusername@example.com",

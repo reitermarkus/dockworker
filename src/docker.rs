@@ -786,8 +786,8 @@ impl Docker {
         password: &str,
         email: &str,
         serveraddress: &str,
-    ) -> Result<AuthResponse> {
-        let req = UserPassword::new(
+    ) -> Result<SystemAuthResponse> {
+        let req = AuthConfig::new(
             username.to_string(),
             password.to_string(),
             email.to_string(),

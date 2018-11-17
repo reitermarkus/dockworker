@@ -1,5 +1,5 @@
 use header::XRegistryAuth;
-use models::AuthResponse;
+use models::SystemAuthResponse;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IdentityToken {
@@ -12,9 +12,9 @@ impl From<String> for IdentityToken {
   }
 }
 
-impl From<AuthResponse> for IdentityToken {
-  fn from(auth_response: AuthResponse) -> Self {
-    auth_response.identity_token.into()
+impl From<SystemAuthResponse> for IdentityToken {
+  fn from(system_auth_response: SystemAuthResponse) -> Self {
+    system_auth_response.identity_token.into()
   }
 }
 

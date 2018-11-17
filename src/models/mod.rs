@@ -1,5 +1,5 @@
-mod auth_response;
-pub use self::auth_response::AuthResponse;
+mod system_auth_response;
+pub use self::system_auth_response::SystemAuthResponse;
 
 mod cluster;
 pub use self::cluster::Cluster;
@@ -103,8 +103,8 @@ pub use self::driver::Driver;
 mod service;
 pub use self::service::Service;
 
-mod user_password;
-pub use self::user_password::UserPassword;
+mod auth_config;
+pub use self::auth_config::AuthConfig;
 
 mod identity_token;
 pub use self::identity_token::IdentityToken;

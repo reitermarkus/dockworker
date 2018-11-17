@@ -1,14 +1,14 @@
 use header::XRegistryAuth;
 
 #[derive(Debug, Clone, Serialize)]
-pub struct UserPassword {
+pub struct AuthConfig {
   username: String,
   password: String,
   email: String,
   serveraddress: String,
 }
 
-impl UserPassword {
+impl AuthConfig {
   pub fn new<S: Into<String>>(username: S, password: S, email: S, serveraddress: S) -> Self {
     Self {
       username: username.into(),
@@ -19,8 +19,8 @@ impl UserPassword {
   }
 }
 
-impl From<UserPassword> for XRegistryAuth {
-  fn from(user_password: UserPassword) -> Self {
+impl From<AuthConfig> for XRegistryAuth {
+  fn from(user_password: AuthConfig) -> Self {
     Self::new(serde_json::to_string(&user_password).unwrap_or_default())
   }
 }
