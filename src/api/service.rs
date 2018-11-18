@@ -27,6 +27,19 @@ impl Docker {
         .and_then(api_result)
   }
 
+  /// Inspect a service
+  ///
+  /// `/services/{id}`
+  pub fn service_inspect(&self, id: &str, insert_defaults: Option<bool>) -> Result<Service> {
+    let mut param = url::form_urlencoded::Serializer::new(String::new());
+
+    insert_defaults.map(|insert_defaults| param.append_pair("insertDefaults", &insert_defaults.to_string()));
+
+    self.http_client()
+        .get(&self.headers(), &format!("/services/{}?{}", id, param.finish()))
+        .and_then(api_result)
+  }
+
   /// Update a service
   ///
   /// `/services/{id}/update`
