@@ -32,7 +32,6 @@ pub mod error;
 mod hyper_client;
 mod http_client;
 pub mod process;
-pub mod signal;
 pub mod stats;
 pub mod models;
 #[cfg(unix)]

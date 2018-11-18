@@ -11,7 +11,6 @@ use docker::{Docker, HaveHttpClient};
 use error::Result;
 use http_client::HttpClient;
 use models::{Container, ContainerInfo, CreateContainerResponse, ContainerCreateOptions, ContainerFilters, ExitStatus, FilesystemChange, Top};
-use signal::Signal;
 use stats::StatsStream;
 use super::{DockerAPIError, api_result, ignore_result, no_content};
 
@@ -208,9 +207,11 @@ impl Docker {
   /// Kill a container
   ///
   /// `/containers/{id}/kill`
-  pub fn container_kill(&self, id: &str, signal: Signal) -> Result<()> {
+  pub fn container_kill(&self, id: &str, signal: Option<&str>) -> Result<()> {
     let mut param = url::form_urlencoded::Serializer::new(String::new());
-    param.append_pair("signal", &signal.as_i32().to_string());
+
+    signal.map(|signal| param.append_pair("signal", &signal));
+
     self.http_client()
         .post(self.headers(), format!("/containers/{}/kill?{}", id, param.finish()), "")
         .and_then(no_content)
