@@ -142,8 +142,14 @@ pub use self::host_config::HostConfig;
 mod process;
 pub use self::process::Process;
 
+mod stats_stream;
+pub use self::stats_stream::StatsStream;
+
 mod image;
 pub use self::image::Image;
+
+mod stats;
+pub use self::stats::Stats;
 
 mod image_id;
 pub use self::image_id::ImageId;

@@ -1,4 +1,4 @@
-/// response of /containers/{id}/changes
+/// response of `/containers/{id}/changes`
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct FilesystemChange {

@@ -28,14 +28,14 @@ extern crate url;
 mod header;
 pub mod container;
 mod docker;
-pub mod error;
+mod error;
 mod hyper_client;
 mod http_client;
-pub mod stats;
 pub mod models;
 mod swarm;
 #[cfg(unix)]
 mod unix;
 pub(crate) mod api;
 
+pub use error::{Result, Error};
 pub use docker::Docker;

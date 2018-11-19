@@ -5,7 +5,7 @@ use hyper::client::response::Response;
 use hyper::http::h1::{Http11Message, HttpWriter};
 use hyper::Url;
 
-use dockworker::stats::{Stats, StatsStream};
+use dockworker::models::{Stats, StatsStream};
 
 use support::memory_stream::MemoryStream;
 

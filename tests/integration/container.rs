@@ -9,8 +9,7 @@ use support::{file, with_image};
 
 use tar::Builder as TarBuilder;
 
-use dockworker::models::{ContainerCreateOptions, ContainerHostConfig, ExitStatus};
-use dockworker::error::Error;
+use dockworker::{Error, models::{ContainerCreateOptions, ContainerHostConfig, ExitStatus}};
 
 #[test]
 fn create_delete() {
