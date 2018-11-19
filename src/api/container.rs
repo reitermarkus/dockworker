@@ -6,11 +6,10 @@ use hyper::header::ContentType;
 use tar::Archive;
 use url;
 
-use container::AttachResponse;
 use docker::{Docker, HaveHttpClient};
 use error::Result;
 use http_client::HttpClient;
-use models::{Container, ContainerInfo, CreateContainerResponse, ContainerCreateOptions, ContainerFilters, ExitStatus, FilesystemChange, StatsStream, Top};
+use models::{AttachResponse, Container, ContainerInfo, CreateContainerResponse, ContainerCreateOptions, ContainerFilters, ExitStatus, FilesystemChange, StatsStream, Top};
 use super::{DockerAPIError, api_result, ignore_result, no_content};
 
 impl Docker {

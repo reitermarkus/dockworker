@@ -142,6 +142,12 @@ pub use self::host_config::HostConfig;
 mod process;
 pub use self::process::Process;
 
+mod attach_response;
+pub use self::attach_response::AttachResponse;
+
+mod attach_container;
+pub use self::attach_container::AttachContainer;
+
 mod stats_stream;
 pub use self::stats_stream::StatsStream;
 

@@ -9,7 +9,7 @@ use support::{file, with_image};
 
 use tar::Builder as TarBuilder;
 
-use dockworker::{Error, models::{ContainerCreateOptions, ContainerHostConfig, ExitStatus}};
+use dockworker::{Error, models::{AttachContainer, ContainerCreateOptions, ContainerHostConfig, ExitStatus}};
 
 #[test]
 fn create_delete() {
@@ -167,7 +167,7 @@ fn attach() {
   let res = docker
     .container_attach(&container.id, None, true, true, false, true, true)
     .unwrap();
-  let cont: container::AttachContainer = res.into();
+  let cont: AttachContainer = res.into();
 
   // expected files
   let exp_stdout = File::open(root.join(exps[0])).unwrap();

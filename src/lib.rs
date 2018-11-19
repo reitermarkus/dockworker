@@ -26,7 +26,6 @@ extern crate unix_socket;
 extern crate url;
 
 mod header;
-pub mod container;
 mod docker;
 mod error;
 mod hyper_client;
