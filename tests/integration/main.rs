@@ -11,5 +11,6 @@ extern crate tar;
 mod support;
 
 mod container;
+mod docker;
 mod image;
 mod stats;

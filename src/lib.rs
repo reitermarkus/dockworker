@@ -34,6 +34,7 @@ mod http_client;
 pub mod process;
 pub mod stats;
 pub mod models;
+mod swarm;
 #[cfg(unix)]
 mod unix;
 pub(crate) mod api;

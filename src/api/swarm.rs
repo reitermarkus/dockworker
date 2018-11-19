@@ -11,10 +11,10 @@ impl Docker {
   /// Initialize a new swarm
   ///
   /// `/swarm/init`
-  pub fn swarm_init(&self, advertise_addr: Option<String>, listen_addr: Option<String>, force_new_cluster: Option<bool>, spec: Option<SwarmSpec>) -> Result<String> {
+  pub fn swarm_init(&self, advertise_addr: Option<&str>, listen_addr: Option<&str>, force_new_cluster: Option<bool>, spec: Option<&SwarmSpec>) -> Result<String> {
     let data = json!({
       "AdvertiseAddr": advertise_addr,
-      "ListenAddr": listen_addr.unwrap_or("0.0.0.0".to_string()),
+      "ListenAddr": listen_addr.unwrap_or("0.0.0.0"),
       "ForceNewCluster": force_new_cluster,
       "Spec": spec,
     }).to_string();
