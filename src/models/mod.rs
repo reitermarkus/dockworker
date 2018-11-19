@@ -151,6 +151,9 @@ pub use self::image_status::ImageStatus;
 mod mount;
 pub use self::mount::Mount;
 
+mod mount_point;
+pub use self::mount_point::MountPoint;
+
 mod network;
 pub use self::network::Network;
 

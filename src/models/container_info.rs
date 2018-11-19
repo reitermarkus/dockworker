@@ -1,4 +1,4 @@
-use models::{Config, Mount, NetworkSettings, State};
+use models::{Config, MountPoint, NetworkSettings, State};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
@@ -17,7 +17,7 @@ pub struct ContainerInfo {
   pub image: String,
   pub log_path: String,
   pub mount_label: String,
-  pub mounts: Vec<Mount>,
+  pub mounts: Vec<MountPoint>,
   pub name: String,
   pub network_settings: NetworkSettings,
   pub path: String,
