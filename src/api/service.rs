@@ -46,7 +46,7 @@ impl Docker {
   pub fn service_update(&self,
     id: &str,
     version: u64, registry_auth_from: Option<&str>, rollback: Option<&str>,
-    spec: ServiceSpec,
+    spec: &ServiceSpec,
   ) -> Result<()> {
     let mut param = url::form_urlencoded::Serializer::new(String::new());
 

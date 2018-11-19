@@ -65,7 +65,8 @@ impl Docker {
     /// try to interpret these as much like the standard `docker` client as
     /// possible.
     pub fn from_env() -> Result<Docker> {
-      let host = env::var("DOCKER_HOST").unwrap_or(DEFAULT_DOCKER_HOST.to_string());
+      let host = env::var("DOCKER_HOST").ok().filter(|s| !s.is_empty())
+                                        .unwrap_or(DEFAULT_DOCKER_HOST.to_string());
 
       // Dispatch to the correct connection function.
       let err = Error::CouldNotConnect(host.clone());

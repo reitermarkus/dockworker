@@ -28,7 +28,7 @@ fn main() -> Result<(), Error> {
 
     spec.mode = Mode::Replicated { replicas: 2 };
 
-    docker.service_update(&id, version, None, None, spec)?;
+    docker.service_update(&id, version, None, None, &spec)?;
   }
 
   Ok(())

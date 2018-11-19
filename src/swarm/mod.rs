@@ -1,4 +1,5 @@
 mod init;
+mod leave;
 
 use Docker;
 
@@ -13,5 +14,9 @@ impl<'a> Swarm<'a> {
 
   pub fn init(&self) -> self::init::Builder<'a> {
     self::init::Builder::new(&self.docker)
+  }
+
+  pub fn leave(&self) -> self::leave::Builder<'a> {
+    self::leave::Builder::new(&self.docker)
   }
 }
