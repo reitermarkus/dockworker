@@ -1,4 +1,4 @@
-use models::{Endpoint, ObjectVersion, ServiceSpec};
+use models::{Endpoint, ObjectVersion, ServiceSpec, UpdateStatus};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
@@ -10,5 +10,6 @@ pub struct Service {
   pub updated_at: String,
   pub spec: ServiceSpec,
   pub endpoint: Endpoint,
+  pub update_status: Option<UpdateStatus>,
 }
 

@@ -148,6 +148,9 @@ pub use self::image_id::ImageId;
 mod image_status;
 pub use self::image_status::ImageStatus;
 
+mod update_status;
+pub use self::update_status::UpdateStatus;
+
 mod mount;
 pub use self::mount::Mount;
 
