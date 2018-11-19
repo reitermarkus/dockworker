@@ -139,6 +139,9 @@ pub use self::system_version_response_platform::SystemVersionResponsePlatform;
 mod host_config;
 pub use self::host_config::HostConfig;
 
+mod process;
+pub use self::process::Process;
+
 mod image;
 pub use self::image::Image;
 

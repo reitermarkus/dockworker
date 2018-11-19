@@ -7,7 +7,6 @@ use models::*;
 use http_client::HttpClient;
 use error::*;
 use hyper_client::HyperClient;
-use process::Process;
 use header::XRegistryAuth;
 
 use swarm::Swarm;
@@ -131,39 +130,9 @@ impl Docker {
         Ok(Docker::new(client))
     }
 
-    pub fn processes(&self, container: &Container) -> Result<Vec<Process>> {
-        let top = self.container_top(container, None)?;
-
-        Ok(top.processes
-            .iter()
-            .map(|process| {
-                let mut p = Process::default();
-
-                for (i, value) in process.iter().enumerate() {
-                    let v = value.clone();
-
-                    match top.titles[i].as_ref() {
-                        "UID" => p.user = v,
-                        "USER" => p.user = v,
-                        "PID" => p.pid = v,
-                        "%CPU" => p.cpu = Some(v),
-                        "%MEM" => p.memory = Some(v),
-                        "VSZ" => p.vsz = Some(v),
-                        "RSS" => p.rss = Some(v),
-                        "TTY" => p.tty = Some(v),
-                        "STAT" => p.stat = Some(v),
-                        "START" => p.start = Some(v),
-                        "STIME" => p.start = Some(v),
-                        "TIME" => p.time = Some(v),
-                        "CMD" => p.command = v,
-                        "COMMAND" => p.command = v,
-                        _ => {}
-                    }
-                }
-                p
-            })
-            .collect())
-    }
+  pub fn processes(&self, container: &Container) -> Result<Vec<Process>> {
+    Ok(self.container_top(container, None)?.into())
+  }
 
   pub fn swarm(&self) -> Swarm {
     Swarm::new(&self)
