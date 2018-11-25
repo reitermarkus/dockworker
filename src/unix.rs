@@ -2,6 +2,7 @@ use hyper;
 use hyper::net::{NetworkConnector, NetworkStream};
 use std::fmt;
 use std::io;
+use std::path::{Path, PathBuf};
 use std::io::{ErrorKind, Read, Write};
 use std::net::{Ipv4Addr, Shutdown, SocketAddr, SocketAddrV4};
 use std::time::Duration;
@@ -101,13 +102,13 @@ impl NetworkStream for HttpUnixStream {
 
 #[derive(Debug, Clone, Default)]
 pub struct HttpUnixConnector {
-    path: String,
+    path: PathBuf,
 }
 
 impl HttpUnixConnector {
-    pub fn new(path: &str) -> HttpUnixConnector {
+    pub fn new(path: impl AsRef<Path>) -> HttpUnixConnector {
         HttpUnixConnector {
-            path: path.to_string(),
+            path: path.as_ref().into(),
         }
     }
 }
