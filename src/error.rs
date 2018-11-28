@@ -1,4 +1,5 @@
 use std::io;
+use std::string;
 
 use hyper;
 use serde_json;
@@ -13,6 +14,9 @@ pub enum Error {
 
   #[fail(display = "API Error")]
   Url(#[cause] hyper::error::ParseError),
+
+  #[fail(display = "UTF-8 Error")]
+  Utf8(#[cause] string::FromUtf8Error),
 
   #[fail(display = "IO Error")]
   Io(#[cause] io::Error),
@@ -63,8 +67,14 @@ impl From<url::ParseError> for Error {
   }
 }
 
-impl From<std::io::Error> for Error {
-  fn from(e: std::io::Error) -> Self {
+impl From<io::Error> for Error {
+  fn from(e: io::Error) -> Self {
     Error::Io(e)
+  }
+}
+
+impl From<string::FromUtf8Error> for Error {
+  fn from(e: string::FromUtf8Error) -> Self {
+    Error::Utf8(e)
   }
 }
