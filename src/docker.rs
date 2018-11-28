@@ -10,8 +10,6 @@ use error::*;
 use hyper_client::HyperClient;
 use header::XRegistryAuth;
 
-use swarm::Swarm;
-
 /// The default `DOCKER_HOST` address that we will try to connect to.
 #[cfg(unix)]
 pub const DEFAULT_DOCKER_HOST: &'static str = "unix:///var/run/docker.sock";
@@ -139,10 +137,6 @@ impl Docker {
 
   pub fn processes(&self, container: &Container) -> Result<Vec<Process>> {
     Ok(self.container_top(container, None)?.into())
-  }
-
-  pub fn swarm(&self) -> Swarm {
-    Swarm::new(&self)
   }
 }
 

@@ -31,7 +31,6 @@ mod error;
 mod hyper_client;
 mod http_client;
 pub mod models;
-mod swarm;
 #[cfg(unix)]
 mod unix;
 pub(crate) mod api;
