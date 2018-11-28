@@ -11,6 +11,7 @@ pub mod container;
 pub mod image;
 pub mod secret;
 pub mod service;
+pub mod stack;
 pub mod swarm;
 pub mod system;
 
