@@ -1,16 +1,14 @@
 use std::path::Path;
 use std::process::{Command, Stdio};
-use std::io::{BufReader, BufRead, Lines};
-use std::process::ChildStdout;
 
 use docker::Docker;
-use error::Result;
+use error::{Error, Result};
 
 impl Docker {
   /// Deploy a stack
   ///
   /// `docker stack deploy`
-  pub fn stack_deploy(&self, stack: &str, compose_file: Option<impl AsRef<Path>>, bundle_file: Option<impl AsRef<Path>>, prune: Option<bool>) -> Result<Lines<BufReader<ChildStdout>>> {
+  pub fn stack_deploy(&self, stack: &str, compose_file: Option<impl AsRef<Path>>, bundle_file: Option<impl AsRef<Path>>, prune: Option<bool>) -> Result<()> {
     let mut cmd = Command::new("docker");
 
     cmd.args(&["stack", "deploy"]);
@@ -32,19 +30,23 @@ impl Docker {
     cmd.arg(stack);
 
     cmd.stdin(Stdio::null());
-    cmd.stdout(Stdio::piped());
-    cmd.stderr(Stdio::null());
 
-    let child = cmd.spawn()?;
+    let mut child = cmd.spawn()?;
 
-    Ok(BufReader::new(child.stdout.unwrap()).lines())
+    let exit_status = child.wait()?;
+
+    if exit_status.success() {
+      Ok(())
+    } else {
+      Err(Error::Unknown("docker stack deploy failed".into()))
+    }
   }
 
-  pub fn stack_deploy_with_bundle_file(&self, stack: &str, bundle_file: impl AsRef<Path>, prune: Option<bool>) -> Result<Lines<BufReader<ChildStdout>>> {
+  pub fn stack_deploy_with_bundle_file(&self, stack: &str, bundle_file: impl AsRef<Path>, prune: Option<bool>) -> Result<()> {
     self.stack_deploy(stack, None::<&Path>, Some(bundle_file), prune)
   }
 
-  pub fn stack_deploy_with_compose_file(&self, stack: &str, compose_file: impl AsRef<Path>, prune: Option<bool>) -> Result<Lines<BufReader<ChildStdout>>> {
+  pub fn stack_deploy_with_compose_file(&self, stack: &str, compose_file: impl AsRef<Path>, prune: Option<bool>) -> Result<()> {
     self.stack_deploy(stack, Some(compose_file), None::<&Path>, prune)
   }
 }
